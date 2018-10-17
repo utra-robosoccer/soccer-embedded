@@ -8,18 +8,19 @@
 #     directories:
 #         - "~/.platformio"
 
-env:
-    - PLATFORMIO_PROJECT_DIR=Robot_F4
-    - PLATFORMIO_PROJECT_DIR=Robot_F7
+# env:
+    # - PLATFORMIO_PROJECT_DIR=Robot_F4
+    # - PLATFORMIO_PROJECT_DIR=Robot_F7
 
 # install:
 #     - pip install -U platformio
 
 script:
     # - platformio run -d $PLATFORMIO_PROJECT_DIR
-    cd $TRAVIS_BUILD_DIR/Robot_F4
-    make clean
-    make
-    cd $TRAVIS_BUILD_DIR/Robot_F7
-    make clean
-    make
+    - pwd
+    - cd $TRAVIS_BUILD_DIR/Robot_F4
+    - make clean
+    - make
+    - cd $TRAVIS_BUILD_DIR/Robot_F7
+    - make clean
+    - make
