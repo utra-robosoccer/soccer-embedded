@@ -92,7 +92,6 @@ tmp/
 #.classpath
 
 # STM Microelectronics stuff
-**/Debug/
 RemoteSystemsTempFiles/
 .metadata/
 */language.settings.xml
