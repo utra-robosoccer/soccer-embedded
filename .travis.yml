@@ -18,9 +18,9 @@
 script:
     # - platformio run -d $PLATFORMIO_PROJECT_DIR
     - pwd
-    - cd $TRAVIS_BUILD_DIR/Robot_F4
+    - cd $TRAVIS_BUILD_DIR/Robot_F4/Debug
     - make clean
     - make
-    - cd $TRAVIS_BUILD_DIR/Robot_F7
+    - cd $TRAVIS_BUILD_DIR/Robot_F7/Debug
     - make clean
     - make
