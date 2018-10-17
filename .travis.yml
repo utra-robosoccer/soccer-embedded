@@ -18,7 +18,7 @@
 script:
     # - platformio run -d $PLATFORMIO_PROJECT_DIR
     - pwd
-    - find $TRAVIS_BUILD_DIR -type f -exec sed -i 's/^(.*?)soccer-embedded//$TRAVIS_BUILD_DIR/g' {} \;
+    - find $TRAVIS_BUILD_DIR -type f -exec sed -i 's/^(.*?)soccer-embedded/\$TRAVIS_BUILD_DIR/g' {} \;
     - cd $TRAVIS_BUILD_DIR/Robot_F4/Debug
     - make clean
     - make
