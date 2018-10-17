@@ -34,8 +34,10 @@ Src \
 app \
 component/Communication \
 component/DSP \
-component/DaisyChain \
-component/Dynamixel1 \
+component/Dynamixel/AX12A \
+component/Dynamixel/MX28 \
+component/Dynamixel/ProtocolV1 \
+component/Dynamixel/ProtocolV1/IO \
 component/MPU6050 \
 component/UartDriver \
 hardware \

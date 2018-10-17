@@ -12,8 +12,10 @@ RM := rm -rf
 -include hardware/subdir.mk
 -include component/UartDriver/subdir.mk
 -include component/MPU6050/subdir.mk
--include component/Dynamixel1/subdir.mk
--include component/DaisyChain/subdir.mk
+-include component/Dynamixel/ProtocolV1/IO/subdir.mk
+-include component/Dynamixel/ProtocolV1/subdir.mk
+-include component/Dynamixel/MX28/subdir.mk
+-include component/Dynamixel/AX12A/subdir.mk
 -include component/DSP/subdir.mk
 -include component/Communication/subdir.mk
 -include app/subdir.mk
