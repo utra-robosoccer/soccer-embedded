@@ -1,6 +1,6 @@
 script:
     - pwd
-    - find $TRAVIS_BUILD_DIR -type f -path "*/soccer-embedded/Robot*.mk" -exec sed 's/.*soccer-embedded/\$TRAVIS_BUILD_DIR/gep' {} \;
+    - find $TRAVIS_BUILD_DIR -type f -path "*/soccer-embedded/Robot*.mk" -exec perl -pi.bak -e 's/[A-Za-z:].*?soccer-embedded/\$TRAVIS_BUILD_DIR/g' {} \;
     - cd $TRAVIS_BUILD_DIR/Robot_F4/Debug
     - cd hardware
     - cat subdir.mk
