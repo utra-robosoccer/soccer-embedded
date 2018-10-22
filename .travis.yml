@@ -5,8 +5,10 @@ script:
     - cd hardware
     - cat subdir.mk
     - cd ../
+    - ls
     - make clean
-    - make makefile
+    - make
     - cd $TRAVIS_BUILD_DIR/Robot_F7/Debug
+    - ls
     - make clean
     - make makefile
