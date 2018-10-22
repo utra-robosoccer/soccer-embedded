@@ -6,7 +6,7 @@ script:
     - cat subdir.mk
     - cd ../
     - make clean
-    - make
+    - make makefile
     - cd $TRAVIS_BUILD_DIR/Robot_F7/Debug
     - make clean
-    - make
+    - make makefile
