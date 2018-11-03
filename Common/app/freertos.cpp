@@ -443,6 +443,12 @@ void StartCommandTask(void const * argument) {
         // CommandTask waits for signal from RxTask indicating new input.
         xTaskNotifyWait(0, NOTIFIED_FROM_TASK, NULL, portMAX_DELAY);
 
+        /* XXX: Moved from RxTask. Can now replace with EventHandler.parseCommand.*/
+        receiveDataBuffer();
+
+        xTaskNotify(IMUTaskHandle, NOTIFIED_FROM_TASK, eSetBits);// Wake MPU task
+
+        // XXX: move to ConvertRobotGoalIntoMotorData function, which happens in dispatchCommand
         // Convert raw bytes from robotGoal received from PC into floats
         for(uint8_t i = 0; i < 18; i++){
             uint8_t* ptr = (uint8_t*)&positions[i];
@@ -452,6 +458,7 @@ void StartCommandTask(void const * argument) {
             }
         }
 
+        // XXX: move to dispatchCommand
         if(numIterations % 100 == 0){
             // Every 100 iterations, assert torque enable
             for(uint8_t i = MOTOR1; i <= MOTOR18; i++){
@@ -461,6 +468,7 @@ void StartCommandTask(void const * argument) {
             }
         }
 
+        // XXX: move to ConvertRobotGoalIntoMotorData function, which happens in dispatchCommand
         // Send each goal position to the queue, where the UART handler
         // thread that's listening will receive it and send it to the motor
         for(i = MOTOR1; i <= MOTOR18; i++){ // NB: i begins at 0 (i.e. Motor1 corresponds to i = 0)
@@ -505,9 +513,11 @@ void StartCommandTask(void const * argument) {
                     break;
             }
 
+            // XXX: move to dispatchCommand
             Motorcmd[i].type = cmdWritePosition;
             xQueueSend(Motorcmd[i].qHandle, &Motorcmd[i], 0);
 
+            // XXX: move to dispatchCommand
             // Only read from legs
             if(i <= MOTOR12){
                 Motorcmd[i].type = cmdReadPosition;
@@ -741,8 +751,7 @@ void StartRxTask(void const * argument) {
         copyIntoBuffRx(rxBuff);
 
         // RxTask notifies CommandTask that a complete message has been received.
-        /* XXX: This will be moved to EventHandlerTask. */
-        receiveDataBuffer();
+        xTaskNotify(CommandTaskHandle, NOTIFIED_FROM_TASK, eSetBits);
     }
 }
 

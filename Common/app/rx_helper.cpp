@@ -151,8 +151,6 @@ void receiveDataBuffer(void) {
                 startSeqCount = 0;
                 totalBytesRead = 0;
 
-                xTaskNotify(CommandTaskHandle, NOTIFIED_FROM_TASK, eSetBits);// Wake control task
-                xTaskNotify(IMUTaskHandle, NOTIFIED_FROM_TASK, eSetBits);// Wake MPU task
                 continue;
             }
         } else {
@@ -164,7 +162,6 @@ void receiveDataBuffer(void) {
             }
         }
     }
-
 }
 
 /* XXX: temp function while eventHandler gets integrated*/
