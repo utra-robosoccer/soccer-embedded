@@ -2,13 +2,21 @@ language: cpp
 os: osx  
 install:  
   - brew cask install eclipse-cpp gcc-arm-embedded  
+<<<<<<< HEAD
   - /usr/local/Eclipse.app/Contents/MacOS/eclipse -noSplash   
+=======
+  - /Applications/Eclipse.app/Contents/MacOS/eclipse -noSplash   
+>>>>>>> origin/Add-Travis-CI
     -application org.eclipse.equinox.p2.director   
     -repository http://gnuarmeclipse.sourceforge.net/updates   
     -installIUs ilg.gnuarmeclipse.managedbuild.cross.feature.group   
     -profileProperties org.eclipse.update.install.features=true  
 script:  
+<<<<<<< HEAD
   - /usr/local/Eclipse.app/Contents/MacOS/eclipse -noSplash   
+=======
+  - /Applications/Eclipse.app/Contents/MacOS/eclipse -noSplash   
+>>>>>>> origin/Add-Travis-CI
     -application org.eclipse.cdt.managedbuilder.core.headlessbuild   
     -importAll $TRAVIS_BUILD_DIR/Robot_F4   
     -cleanBuild all  
