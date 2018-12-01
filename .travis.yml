@@ -11,12 +11,17 @@ install:
 script:  
   - travis_wait /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
     -application org.eclipse.cdt.managedbuilder.core.headlessbuild   
-    -importAll $TRAVIS_BUILD_DIR/Robot_F4   
+    -importAll $TRAVIS_BUILD_DIR/Robot_F4
+    -consoleLog
+    -debug   
     -cleanBuild all  
 
   - pwd
   - find $TRAVIS_BUILD_DIR -type f -path "*/soccer-embedded/Robot*.mk" -exec perl -pi.bak -e 's/(C|D):[A-Za-z:]*.*?soccer-embedded/\$TRAVIS_BUILD_DIR/g' {} \;
+  - cd $TRAVIS_BUILD_DIR/Robot_F4/
+  - ls
   - cd $TRAVIS_BUILD_DIR/Robot_F4/Debug
+  - ls
   - cd hardware
   - cat subdir.mk
   - cd ../
