@@ -14,7 +14,7 @@ install:
   - ls  
   - cd /Applications/Eclipse\ CPP.app/Contents/MacOS
   - ls
-  - /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
+  - travis_wait /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
     -application org.eclipse.equinox.p2.director   
     -repository http://gnuarmeclipse.sourceforge.net/updates   
     -installIUs ilg.gnuarmeclipse.managedbuild.cross.feature.group   
