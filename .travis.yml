@@ -6,24 +6,24 @@ install:
   - ls
   - cd /usr/
   - ls
-  - cd /usr/local
+  - cd /Applications
   - ls
-  - cd /usr/local/Eclipse\ CPP.app
+  - cd /Applications/Eclipse\ CPP.app
   - ls  
-  - cd /usr/local/Eclipse\ CPP.app/Contents
+  - cd /Applications/Eclipse\ CPP.app/Contents
   - ls  
-  - cd /usr/local/Eclipse\ CPP.app/Contents/MacOS
+  - cd /Applications/Eclipse\ CPP.app/Contents/MacOS
   - ls
-  - cd /usr/local/Eclipse\ CPP.app/Contents/MacOS/eclipse
+  - cd /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse
   - ls    
-  - /usr/local/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
+  - /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
     -application org.eclipse.equinox.p2.director   
     -repository http://gnuarmeclipse.sourceforge.net/updates   
     -installIUs ilg.gnuarmeclipse.managedbuild.cross.feature.group   
     -profileProperties org.eclipse.update.install.features=true  
 
 script:  
-  - /usr/local/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
+  - /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
     -application org.eclipse.cdt.managedbuilder.core.headlessbuild   
     -importAll $TRAVIS_BUILD_DIR/Robot_F4   
     -cleanBuild all  
