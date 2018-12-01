@@ -14,8 +14,6 @@ install:
   - ls  
   - cd /Applications/Eclipse\ CPP.app/Contents/MacOS
   - ls
-  - cd /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse
-  - ls    
   - /Applications/Eclipse\ CPP.app/Contents/MacOS/eclipse -noSplash   
     -application org.eclipse.equinox.p2.director   
     -repository http://gnuarmeclipse.sourceforge.net/updates   
