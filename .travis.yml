@@ -2,6 +2,10 @@ language: cpp
 os: osx  
 install:  
   - brew cask install eclipse-cpp gcc-arm-embedded
+  - cd 
+  - ls
+  - cd /usr/
+  - ls
   - cd /usr/local
   - ls
   - cd /usr/local/Eclipse\ CPP.app
