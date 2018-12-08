@@ -1,4 +1,6 @@
 language: cpp
+jdk:
+  - oraclejdk8
 os: osx  
 install:  
   - brew cask install eclipse-cpp gcc-arm-embedded
