@@ -403,7 +403,8 @@ void StartCommandTask(void const * argument)
 
     // Configure the IMU to use the tightest filter bandwidth
     constexpr uint8_t IMU_DIGITAL_LOWPASS_FILTER_SETTING = 6;
-    periph::imuData.init(IMU_DIGITAL_LOWPASS_FILTER_SETTING);
+    periph::imuData.init();
+    periph::imuData.Set_LPF(IMU_DIGITAL_LOWPASS_FILTER_SETTING);
 
     // Set up the sensor data buffer
     BufferMaster.setup_buffers(DATABUFFERHandle, &osInterfaceImpl);
