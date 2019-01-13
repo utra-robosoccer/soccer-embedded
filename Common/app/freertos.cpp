@@ -374,7 +374,7 @@ void StartCommandTask(void const * argument)
     //      doesn't gain us anything
     //   2. The UART callbacks are hardcoded to wake up their corresponding
     //      UART threads used later in the flow
-    periph::initMotorIOType(IO_Type::POLL);
+    periph::setMotorIOType(IO_Type::POLL);
 
     // The return delay time is the time the motor waits before sending back
     // data for a read request. We found that a value of 100 us worked reliably
@@ -396,15 +396,22 @@ void StartCommandTask(void const * argument)
             static_cast<dynamixel::AX12A*>(periph::motors[i])->setComplianceMargin(1);
         }
     }
- 
-    // The only other communication with the motors will occur in the UART
-    // threads, so we can use DMA now.
-    periph::initMotorIOType(IO_Type::DMA);
 
     // Configure the IMU to use the tightest filter bandwidth
     constexpr uint8_t IMU_DIGITAL_LOWPASS_FILTER_SETTING = 6;
-    periph::imuData.init();
-    periph::imuData.Set_LPF(IMU_DIGITAL_LOWPASS_FILTER_SETTING);
+    periph::imu.init();
+    periph::imu.Set_LPF(IMU_DIGITAL_LOWPASS_FILTER_SETTING);
+ 
+    // The only other communication with the motors will occur in the UART
+    // threads, so we can use DMA now.
+    constexpr uint32_t MAX_MS_TO_BLOCK = 2;
+    periph::setMotorMaxBlockTime(MAX_MS_TO_BLOCK);
+    periph::setMotorIOType(IO_Type::DMA);
+
+    // The IMU will be communicated with from its thread from now on, so we
+    // want to use non-blocking communication with it from now on
+    periph::setImuIOType(i2c::IO_Type::IT);
+    periph::setImuMaxBlockTime(MAX_MS_TO_BLOCK);
 
     // Set up the sensor data buffer
     BufferMaster.setup_buffers(DATABUFFERHandle, &osInterfaceImpl);
@@ -430,7 +437,7 @@ void StartCommandTask(void const * argument)
         osSignalWait(NOTIFIED_FROM_TASK, osWaitForever);
 
         // Convert raw bytes from robotGoal received from PC into floats
-        uint8_t* ptr = NULL;
+        uint8_t* ptr = nullptr;
         for(uint8_t i = 0; i < 18; i++){
             ptr = (uint8_t*)&positions[i];
             for(uint8_t j = 0; j < 4; j++){
@@ -639,8 +646,8 @@ void StartIMUTask(void const * argument)
         // Service this thread every 2 ms for a 500 Hz sample rate
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(IMU_CYCLE_TIME_MS));
 
-        needsProcessing = app::readFromSensor(periph::imuData, &numSamples);
-        periph::imuData.Fill_Struct(&myIMUStruct);
+        needsProcessing = app::readFromSensor(periph::imu, &numSamples);
+        periph::imu.Fill_Struct(&myIMUStruct);
 
         if(needsProcessing){
             app::processImuData(myIMUStruct);

@@ -73,7 +73,7 @@ enum motorNames_e : uint8_t {
 // Variables
 // ----------------------------------------------------------------------------
 extern std::array<Motor*, 18> motors;
-extern MPU6050 imuData;
+extern MPU6050 imu;
 
 
 
@@ -81,10 +81,28 @@ extern MPU6050 imuData;
 // Functions
 // ----------------------------------------------------------------------------
 /**
- * @brief Configures the IO type used for the motors
+ * @brief Configures the max block time used for all motors
+ * @param ms The maximum number of ms a transfer will block for
+ */
+void setMotorMaxBlockTime(uint32_t ms);
+
+/**
+ * @brief Configures the IO type used for all motors
  * @param io_type The IO type to be used
  */
-void initMotorIOType(IO_Type io_type);
+void setMotorIOType(uart::IO_Type io_type);
+
+/**
+ * @brief Configures the max block time used for the IMU
+ * @param ms The maximum number of ms a transfer will block for
+ */
+void setImuMaxBlockTime(uint32_t ms);
+
+/**
+ * @brief Configures the IO type used for the IMU
+ * @param io_type The IO type to be used
+ */
+void setImuIOType(i2c::IO_Type io_type);
 
 } // end namespace periph
 

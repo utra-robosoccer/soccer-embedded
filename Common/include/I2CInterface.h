@@ -9,8 +9,8 @@
  *****************************************************************************
  */
 
-#ifndef COMMON_INCLUDE_I2CINTERFACE_H_
-#define COMMON_INCLUDE_I2CINTERFACE_H_
+#ifndef COMMON_INCLUDE_I2CINTERFACE_H
+#define COMMON_INCLUDE_I2CINTERFACE_H
 
 /********************************* Includes **********************************/
 #include <stdint.h>
@@ -19,6 +19,20 @@
 
 /******************************* I2C Interface *******************************/
 namespace i2c {
+// Types & enums
+// ----------------------------------------------------------------------------
+/**
+ * @brief Enumerates the IO types supported by a class which implements the
+ *        UartInterface class
+ */
+enum class IO_Type{
+    POLL /**< Polled IO          */
+#if defined(THREADED)
+    ,
+    IT, /**< Interrupt-driven IO */
+#endif
+};
+
 
 // Classes and Structs
 /**
@@ -29,18 +43,13 @@ namespace i2c {
  */
 class I2CInterface {
 public:
-    virtual ~I2CInterface();
-    /**
-     * @brief Associates the class with a particular i2c module
-     * @param i2cHandlePtr Pointer to a structure that contains
-     *        the configuration information for the desired i2c module
-     */
-    virtual void setI2CPointer(I2C_HandleTypeDef *i2cHandlePtr) const = 0;
+    virtual ~I2CInterface() {}
 
     /**
-     * @brief  Write an amount of data in blocking mode to a specific memory address
+     * @brief  Write an amount of data in blocking mode to a specific memory
+     *         address
      * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
-     *                the configuration information for the specified I2C.
+     *         the configuration information for the specified I2C
      * @param  DevAddress Target device address
      * @param  MemAddress Internal memory address
      * @param  MemAddSize Size of internal memory address
@@ -49,14 +58,21 @@ public:
      * @param  Timeout Timeout duration
      * @retval HAL status
      */
-    virtual HAL_StatusTypeDef memWrite(I2C_HandleTypeDef *i2cHandlePtr,
-            uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize,
-            uint8_t *pData, uint16_t Size, uint32_t Timeout) const = 0;
+    virtual HAL_StatusTypeDef memWrite(
+        const I2C_HandleTypeDef* hi2c,
+        uint16_t DevAddress,
+        uint16_t MemAddress,
+        uint16_t MemAddSize,
+        uint8_t* pData,
+        uint16_t Size,
+        uint32_t Timeout
+    ) const = 0;
 
     /**
-     * @brief  Read an amount of data in blocking mode from a specific memory address
+     * @brief  Read an amount of data in blocking mode from a specific memory
+     *         address
      * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
-     *                the configuration information for the specified I2C.
+     *         the configuration information for the specified I2C
      * @param  DevAddress Target device address
      * @param  MemAddress Internal memory address
      * @param  MemAddSize Size of internal memory address
@@ -65,14 +81,22 @@ public:
      * @param  Timeout Timeout duration
      * @retval HAL status
      */
-    virtual HAL_StatusTypeDef memRead(I2C_HandleTypeDef *i2cHandlePtr,
-            uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize,
-            uint8_t *pData, uint16_t Size, uint32_t Timeout) const = 0;
+    virtual HAL_StatusTypeDef memRead(
+        const I2C_HandleTypeDef* hi2c,
+        uint16_t DevAddress,
+        uint16_t MemAddress,
+        uint16_t MemAddSize,
+        uint8_t* pData,
+        uint16_t Size,
+        uint32_t Timeout
+    ) const = 0;
 
+#if defined(THREADED)
     /**
-     * @brief  Write an amount of data in non-blocking mode with Interrupt to a specific memory address
+     * @brief  Write an amount of data in non-blocking mode with Interrupt to a
+     *         specific memory address
      * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
-     *                the configuration information for the specified I2C.
+     *         the configuration information for the specified I2C
      * @param  DevAddress Target device address
      * @param  MemAddress Internal memory address
      * @param  MemAddSize Size of internal memory address
@@ -80,14 +104,20 @@ public:
      * @param  Size Amount of data to be sent
      * @retval HAL status
      */
-    virtual HAL_StatusTypeDef memWriteIT(I2C_HandleTypeDef *i2cHandlePtr,
-            uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize,
-            uint8_t *pData, uint16_t Size) const = 0;
+    virtual HAL_StatusTypeDef memWriteIT(
+        const I2C_HandleTypeDef* hi2c,
+        uint16_t DevAddress,
+        uint16_t MemAddress,
+        uint16_t MemAddSize,
+        uint8_t* pData,
+        uint16_t Size
+    ) const = 0;
 
     /**
-     * @brief  Read an amount of data in non-blocking mode with Interrupt from a specific memory address
+     * @brief  Read an amount of data in non-blocking mode with Interrupt from
+     *         a specific memory address
      * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
-     *                the configuration information for the specified I2C.
+     *         the configuration information for the specified I2C
      * @param  DevAddress Target device address
      * @param  MemAddress Internal memory address
      * @param  MemAddSize Size of internal memory address
@@ -95,11 +125,29 @@ public:
      * @param  Size Amount of data to be sent
      * @retval HAL status
      */
-    virtual HAL_StatusTypeDef memReadIT(I2C_HandleTypeDef *i2cHandlePtr,
-            uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize,
-            uint8_t *pData, uint16_t Size) const = 0;
+    virtual HAL_StatusTypeDef memReadIT(
+        const I2C_HandleTypeDef* hi2c,
+        uint16_t DevAddress,
+        uint16_t MemAddress,
+        uint16_t MemAddSize,
+        uint8_t* pData,
+        uint16_t Size
+    ) const = 0;
+
+    /**
+     * @brief  Abort an asynchronous transfer
+     * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+     *         the configuration information for the specified I2C
+     * @param  DevAddress Target device address
+     * @retval HAL status
+     */
+    virtual HAL_StatusTypeDef abortTransfer(
+        const I2C_HandleTypeDef* hi2c,
+        uint16_t DevAddress
+    ) const = 0;
+#endif
 };
-// ----------------------------------------------------------------------------
-}// end namespace i2c
 
-#endif /* COMMON_INCLUDE_I2CINTERFACE_H_ */
+} // end namespace i2c
+
+#endif /* COMMON_INCLUDE_I2CINTERFACE_H */

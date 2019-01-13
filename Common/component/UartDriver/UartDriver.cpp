@@ -33,16 +33,6 @@ UartDriver::UartDriver(){
 }
 
 #if defined(THREADED)
-    /**
-     * @brief Initializes the handle to the low-level hardware routines,
-     *        associates a particular UART module on the board with this
-     *        driver, and initializes the handle to the OS for system calls
-     * @param os_if Pointer to the object handling the calls to the OS
-     * @param hw_if Pointer to the hardware-facing object handling the
-     *        low-level UART routines
-     * @param uartHandlePtr Pointer to a structure that contains
-     *        the configuration information for the desired UART module
-     */
 UartDriver::UartDriver(
     OsInterface* os_if,
     UartInterface* hw_if,
@@ -59,14 +49,6 @@ UartDriver::UartDriver(
     m_max_block_time = pdMS_TO_TICKS(2);
 }
 #else
-    /**
-     * @brief Initializes the handle to the low-level hardware routines, and
-     *        associates a particular UART module on the board with this driver
-     * @param hw_if Pointer to the hardware-facing object handling the
-     *        low-level UART routines
-     * @param uartHandlePtr Pointer to a structure that contains
-     *        the configuration information for the desired UART module
-     */
 UartDriver::UartDriver(
     UartInterface* hw_if,
     UART_HandleTypeDef* uartHandlePtr
@@ -150,10 +132,11 @@ bool UartDriver::transmit(
                 retval = (hal_status == HAL_OK);
                 break;
         }
-
+#if defined(THREADED)
         if(retval != true){
             hw_if->abortTransmit(uartHandlePtr);
         }
+#endif
     }
 
     return retval;
@@ -216,10 +199,11 @@ bool UartDriver::receive(
                 retval = (hal_status == HAL_OK);
                 break;
         }
-
+#if defined(THREADED)
         if(retval != true){
             hw_if->abortReceive(uartHandlePtr);
         }
+#endif
     }
 
     return retval;

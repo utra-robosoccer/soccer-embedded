@@ -23,7 +23,7 @@
 
 /********************************* Includes **********************************/
 #include <stdint.h>
-#include "i2c.h"
+#include "I2cDriver.h"
 
 
 
@@ -49,10 +49,17 @@ typedef struct{
 class MPU6050 {
 public:
     /**
-     * @brief The constructor for the MPU6050 class, which initializes non-I/O members
-     * @param I2CHandle A pointer to the I2C_HandleTypeDef being used
+     * @brief The constructor for the MPU6050 class, which initializes non-I/O
+     *        members
+     * @param driver Pointer to the I2C driver handling the low-level interface
      */
-    MPU6050(I2C_HandleTypeDef* I2CHandle);
+    MPU6050(i2c::I2cDriver* driver);
+
+
+    /**
+     * @brief The MPU6050 destructor
+     */
+    ~MPU6050() {}
 
     /**
      * @brief This function is used to initialize all aspects of the IMU
@@ -71,24 +78,14 @@ public:
     bool Set_LPF(uint8_t lpf);
 
     /**
-     * @brief Reads the gyroscope with offsets without interrupts
+     * @brief Reads the gyroscope
      */
     void Read_Gyroscope();
 
     /**
-     * @brief Reads the gyroscope with interrupts and offsets
-     */
-    void Read_Gyroscope_IT();
-
-    /**
-     * @brief Reads the accelerometer with offsets without interrupts
+     * @brief Reads the accelerometer
      */
     void Read_Accelerometer();
-
-    /**
-     * @brief Reads the accelerometer with interrupts and offsets
-     */
-    void Read_Accelerometer_IT();
 
     /**
      * @brief Fills an IMUStruct
@@ -96,54 +93,39 @@ public:
      */
     void Fill_Struct(IMUStruct_t* myStruct);
 
-    /**
-     * @brief The MPU6050 desctructor
-     */
-    ~MPU6050() {}
-
 private:
     /**
      * @brief Writes to a register from the MPU6050
      * @param reg_addr uint8_t address of the register
      * @param data uint8_t data to be written
-     * @return Status
+     * @return true if successful, otherwise false
      */
-    HAL_StatusTypeDef Write_Reg(uint8_t reg_addr, uint8_t data);
+    bool Write_Reg(
+        uint8_t reg_addr,
+        uint8_t data
+    );
 
     /**
-     * @brief Reads a byte from a register on the sensor, and stores it
-     *        in the member variable received_byte
-     * @param reg_addr uint8_t address of the register
-     * @return Status
+     * @brief Reads 1 or more bytes from the sensor's register bank into a
+     *        provided buffer
+     * @param reg_addr Address of the register to start reading from
+     * @param p_data Address of received data buffer
+     * @param num_bytes Size of the received data buffer
+     * @return true if successful, otherwise false
      */
-    HAL_StatusTypeDef Read_Reg(uint8_t reg_addr);
+    bool Read_Data(
+        uint8_t reg_addr,
+        const uint8_t* p_data,
+        uint8_t num_bytes
+    );
 
-    /**
-     * @brief Reads 6 bytes from the sensor with interrupts, and stores them in
-     *        the sensor_buffer
-     * @param reg_addr uint8_t address of the register
-     * @param sensor_buffer uint8_t pointer to output buffer
-     * @return Status
-     */
-    HAL_StatusTypeDef Read_Data_IT(uint8_t Reg_addr, uint8_t* sensor_buffer);
-
-    /**
-     * @brief Reads 6 bytes from the sensor, and stores them in
-     *        the sensor_buffer
-     * @param reg_addr uint8_t address of the register
-     * @param sensor_buffer uint8_t pointer to output buffer
-     * @return Status
-     */
-    HAL_StatusTypeDef Read_Data(uint8_t Reg_addr, uint8_t* sensor_buffer);
-
-    I2C_HandleTypeDef* I2C_Handle; /**< I2C handle associated with sensor instance */
+    const i2c::I2cDriver* m_driver; /**< I2C driver used for this sensor instance */
     float              x_Gyro;     /**< x-axis angular velocity read from sensor */
     float              y_Gyro;     /**< y-axis angular velocity read from sensor */
     float              z_Gyro;     /**< z-axis angular velocity read from sensor */
     float              x_Accel;    /**< x-axis acceleration read from sensor */
     float              y_Accel;    /**< y-axis acceleration read from sensor */
     float              z_Accel;    /**< z-axis acceleration read from sensor */
-    uint8_t            received_byte;
 };
 
 } // end namespace imu

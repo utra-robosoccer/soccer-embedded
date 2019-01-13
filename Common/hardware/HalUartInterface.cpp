@@ -221,8 +221,6 @@ __IO uint32_t HalUartInterface::getDmaRxInstanceNDTR(
     return const_cast<UART_HandleTypeDef*>(uartHandlePtr)->hdmarx->Instance->NDTR;
 }
 
-#endif
-
 void HalUartInterface::abortTransmit(
     const UART_HandleTypeDef* uartHandlePtr
 ) const
@@ -240,6 +238,7 @@ void HalUartInterface::abortReceive(
         const_cast<UART_HandleTypeDef*>(uartHandlePtr)
     );
 }
+#endif
 
 __IO uint32_t HalUartInterface::getErrorCode(
     const UART_HandleTypeDef* uartHandlePtr

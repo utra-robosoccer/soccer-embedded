@@ -159,7 +159,6 @@ public:
     virtual __IO uint32_t getDmaRxInstanceNDTR(
         const UART_HandleTypeDef* uartHandlePtr
     ) const = 0;
-#endif
 
     /**
      * @brief Aborts an asynchronous transmission
@@ -178,6 +177,7 @@ public:
     virtual void abortReceive(
         const UART_HandleTypeDef* uartHandlePtr
     ) const = 0;
+#endif
 
     /**
      * @brief Gets the error code for the given UART handle.

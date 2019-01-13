@@ -28,10 +28,10 @@ namespace mocks{
  */
 class MockI2CInterface: public I2CInterface{
 public:
-	MOCK_CONST_METHOD1(assignHandle, void(I2C_HandleTypeDef *hi2c));
 	MOCK_CONST_METHOD6(memWrite , HAL_StatusTypeDef(uint16_t DevAddress, uint16_t MemAddress,
 				uint16_t MemAddSize, uint8_t *pData, uint16_t Size,
-				uint32_t Timeout));
+				uint32_t Timeout)
+	        );
 	MOCK_CONST_METHOD6(memRead , HAL_StatusTypeDef(uint16_t DevAddress, uint16_t MemAddress,
 					uint16_t MemAddSize, uint8_t *pData, uint16_t Size,
 					uint32_t Timeout));
@@ -39,6 +39,8 @@ public:
 					uint16_t MemAddSize, uint8_t *pData, uint16_t Size));
 	MOCK_CONST_METHOD5(memRead_IT , HAL_StatusTypeDef(uint16_t DevAddress, uint16_t MemAddress,
 						uint16_t MemAddSize, uint8_t *pData, uint16_t Size));
+
+	MOCK_CONST_METHOD2(abortTransfer, HAL_StatusTypeDef(uint16_t DevAddress));
 }
 
 }// end namespace i2c

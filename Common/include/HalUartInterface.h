@@ -80,8 +80,6 @@ public:
         const UART_HandleTypeDef* uartHandlePtr
     ) const override final;
 
-#endif
-
     void abortTransmit(
         const UART_HandleTypeDef* uartHandlePtr
     ) const override final;
@@ -89,6 +87,7 @@ public:
     void abortReceive(
         const UART_HandleTypeDef* uartHandlePtr
     ) const override final;
+#endif
 
     __IO uint32_t getErrorCode(
         const UART_HandleTypeDef* uartHandlePtr
