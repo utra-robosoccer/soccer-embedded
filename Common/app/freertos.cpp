@@ -400,7 +400,7 @@ void StartCommandTask(void const * argument)
     // Configure the IMU to use the tightest filter bandwidth
     constexpr uint8_t IMU_DIGITAL_LOWPASS_FILTER_SETTING = 6;
     periph::imu.init();
-    periph::imu.Set_LPF(IMU_DIGITAL_LOWPASS_FILTER_SETTING);
+    periph::imu.set_dlpf(IMU_DIGITAL_LOWPASS_FILTER_SETTING);
  
     // The only other communication with the motors will occur in the UART
     // threads, so we can use DMA now.
@@ -647,7 +647,7 @@ void StartIMUTask(void const * argument)
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(IMU_CYCLE_TIME_MS));
 
         needsProcessing = app::readFromSensor(periph::imu, &numSamples);
-        periph::imu.Fill_Struct(&myIMUStruct);
+        myIMUStruct = periph::imu.get_data();
 
         if(needsProcessing){
             app::processImuData(myIMUStruct);

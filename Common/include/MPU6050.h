@@ -32,17 +32,14 @@
 namespace imu{
 // Classes and structs
 // ----------------------------------------------------------------------------
-/**
- * @brief The data structure which represents the data of the IMU, which is
- *        sent in queues between tasks
- */
+/** @brief Data measured by the IMU */
 typedef struct{
-    float x_Gyro;  /**< x-axis angular velocity read from sensor */
-    float y_Gyro;  /**< y-axis angular velocity read from sensor */
-    float z_Gyro;  /**< z-axis angular velocity read from sensor */
-    float x_Accel; /**< x-axis acceleration read from sensor     */
-    float y_Accel; /**< y-axis acceleration read from sensor     */
-    float z_Accel; /**< z-axis acceleration read from sensor     */
+    float vx; /**< x-axis angular velocity read from sensor */
+    float vy; /**< y-axis angular velocity read from sensor */
+    float vz; /**< z-axis angular velocity read from sensor */
+    float ax; /**< x-axis acceleration read from sensor     */
+    float ay; /**< y-axis acceleration read from sensor     */
+    float az; /**< z-axis acceleration read from sensor     */
 }IMUStruct_t;
 
 
@@ -75,23 +72,27 @@ public:
      *        Hz bandwidth)
      * @return true if successful, otherwise false
      */
-    bool Set_LPF(uint8_t lpf);
+    bool set_dlpf(uint8_t lpf);
 
     /**
-     * @brief Reads the gyroscope
+     * @brief Reads the the angular velocity in the x-, y-, and z-axes from the
+     *        gyroscope
+     * @return true if successful, otherwise false
      */
-    void Read_Gyroscope();
+    bool read_gyroscope();
 
     /**
-     * @brief Reads the accelerometer
+     * @brief Reads the acceleration along the x-, y-, and z-axes from the
+     *        accelerometer
+     * @return true if successful, otherwise false
      */
-    void Read_Accelerometer();
+    bool read_accelerometer();
 
     /**
-     * @brief Fills an IMUStruct
-     * @param myStruct The pointer to the struct being filled
+     * @brief Retrieves state information from the IMU
+     * @return Data the IMU has measured from the gyroscope and accelerometer
      */
-    void Fill_Struct(IMUStruct_t* myStruct);
+    IMUStruct_t get_data();
 
 private:
     /**
@@ -100,7 +101,7 @@ private:
      * @param data uint8_t data to be written
      * @return true if successful, otherwise false
      */
-    bool Write_Reg(
+    bool write_reg(
         uint8_t reg_addr,
         uint8_t data
     );
@@ -113,19 +114,14 @@ private:
      * @param num_bytes Size of the received data buffer
      * @return true if successful, otherwise false
      */
-    bool Read_Data(
+    bool read_data(
         uint8_t reg_addr,
         const uint8_t* p_data,
         uint8_t num_bytes
     );
 
     const i2c::I2cDriver* m_driver; /**< I2C driver used for this sensor instance */
-    float              x_Gyro;     /**< x-axis angular velocity read from sensor */
-    float              y_Gyro;     /**< y-axis angular velocity read from sensor */
-    float              z_Gyro;     /**< z-axis angular velocity read from sensor */
-    float              x_Accel;    /**< x-axis acceleration read from sensor */
-    float              y_Accel;    /**< y-axis acceleration read from sensor */
-    float              z_Accel;    /**< z-axis acceleration read from sensor */
+    IMUStruct_t m_data; /**< Data measured by IMU */
 };
 
 } // end namespace imu
@@ -134,6 +130,5 @@ private:
 /**
  * @}
  */
-/* end - Header */
 
 #endif /* MPU6050_H_ */

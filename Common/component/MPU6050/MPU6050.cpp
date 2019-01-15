@@ -6,6 +6,7 @@
   * @author Jenny
   *
   * @ingroup MPU6050
+  * @{
   *****************************************************************************
   */
 
@@ -15,12 +16,6 @@
 /********************************* Includes **********************************/
 #include "MPU6050.h"
 #include <math.h>
-#include "Notification.h"
-#include "cmsis_os.h"
-#include "SystemConf.h"
-#if defined(USE_I2C_SILICON_BUG_FIX)
-#include "gpio.h"
-#endif
 
 
 
@@ -30,159 +25,30 @@ namespace {
 // Constants
 // ----------------------------------------------------------------------------
 constexpr float g = 9.81;
-
-// Unit coefficient constants
-constexpr uint8_t IMU_GY_RANGE = 131; /**< divide by this to get degrees per second */
-constexpr float ACC_RANGE = 16384.0; /**< divide to get in units of g */
-
-// Register addresses
 constexpr uint8_t I2C_ID = 0b11010000;
+
+// Unit conversion constants
+/** Divide by this to get degrees per second from the gyroscope readings */
+constexpr float IMU_GY_RANGE = 131.0;
+
+/** Divide to get units of g from the accelerometer readings*/
+constexpr float ACC_RANGE = 16384.0;
+
+// Control register addresses
 constexpr uint8_t REG_DLPF = 0x1A;
 constexpr uint8_t REG_GYRO_CONFIG = 0x1B;
 constexpr uint8_t REG_ACCEL_CONFIG = 0x1C;
 constexpr uint8_t REG_I2C_MST_CTRL = 0x24;
 constexpr uint8_t REG_SMPLRT_DIV = 0x19;
 
-// Output
+// Measurement register addresses
 constexpr uint8_t REG_ACCEL_XOUT_H = 0x3B;
 constexpr uint8_t REG_GYRO_XOUT_H = 0x43;
 constexpr uint8_t REG_PWR_MGMT_1 = 0x6B;
 constexpr uint8_t REG_PWR_MGMT_2 = 0x6C;
 
-// Sample Rate DIV
+// Sample rate divider setting
 constexpr uint8_t CLOCK_DIV_296 = 0x4;
-
-
-
-
-// Functions
-// ----------------------------------------------------------------------------
-// We only need these functions for a silicon issue that affects the F446RE and
-// not the F767ZI
-#if defined(USE_I2C_SILICON_BUG_FIX)
-// Note: The following 2 functions are used as a workaround for an issue where the BUSY flag of the
-// I2C module is erroneously asserted in the hardware (a silicon bug, essentially). This workaround has
-// not been thoroughly tested, but we know it works
-//
-// Overall, use these functions with EXTREME caution.
-
-/**
-  * @brief   Helper function for I2C_ClearBusyFlagErratum.
-  * @param   None
-  * @return  None
-  */
-uint8_t wait_for_gpio_state_timeout(GPIO_TypeDef *port,
-        uint16_t pin,
-        GPIO_PinState state,
-        uint8_t timeout){
-
-    uint32_t Tickstart = HAL_GetTick();
-    uint8_t ret = 0;
-    /* Wait until flag is set */
-    while((state != HAL_GPIO_ReadPin(port, pin)) && (1 == ret)){
-        /* Check for the timeout */
-        if ((timeout == 0U) || (HAL_GetTick() - Tickstart >= timeout)){
-            ret = 0;
-        }
-        asm("nop");
-    }
-    return ret;
-}
-
-/**
-  * @brief   This function big-bangs the I2C master clock
-  *          https://electronics.stackexchange.com/questions/267972/i2c-busy-flag-strange-behaviour/281046#281046
-  *          https://community.st.com/thread/35884-cant-reset-i2c-in-stm32f407-to-release-i2c-lines
-  *          https://electronics.stackexchange.com/questions/272427/stm32-busy-flag-is-set-after-i2c-initialization
-  *          http://www.st.com/content/ccc/resource/technical/document/errata_sheet/f5/50/c9/46/56/db/4a/f6/CD00197763.pdf/files/CD00197763.pdf/jcr:content/translations/en.CD00197763.pdf
-  * @param   numClocks The number of times to cycle the I2C master clock
-  * @param   sendStopBits 1 if stop bits are to be sent on SDA
-  * @return  None
-  */
-void generateClocks(uint8_t numClocks, uint8_t sendStopBits){
-    static struct I2C_Module{
-        I2C_HandleTypeDef*   instance;
-        uint16_t            sdaPin;
-        GPIO_TypeDef*       sdaPort;
-        uint16_t            sclPin;
-        GPIO_TypeDef*       sclPort;
-    }i2cmodule = {&hi2c1, GPIO_PIN_7, GPIOB, GPIO_PIN_6, GPIOB};
-    static struct I2C_Module* i2c = &i2cmodule;
-    static uint8_t timeout = 1;
-
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    I2C_HandleTypeDef* handler = NULL;
-
-    handler = i2c->instance;
-
-    // 1. Clear PE bit.
-    CLEAR_BIT(handler->Instance->CR1, I2C_CR1_PE);
-
-    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_OD;
-    GPIO_InitStructure.Pull = GPIO_NOPULL;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-
-    GPIO_InitStructure.Pin = i2c->sclPin;
-    HAL_GPIO_Init(i2c->sclPort, &GPIO_InitStructure);
-
-    GPIO_InitStructure.Pin = i2c->sdaPin;
-    HAL_GPIO_Init(i2c->sdaPort, &GPIO_InitStructure);
-
-    for(uint8_t i = 0; i < numClocks; i++){
-        // 3. Check SCL and SDA High level in GPIOx_IDR.
-        if(sendStopBits){HAL_GPIO_WritePin(i2c->sdaPort, i2c->sdaPin, GPIO_PIN_SET);}
-        HAL_GPIO_WritePin(i2c->sclPort, i2c->sclPin, GPIO_PIN_SET);
-
-        wait_for_gpio_state_timeout(i2c->sclPort, i2c->sclPin, GPIO_PIN_SET, timeout);
-        if(sendStopBits){wait_for_gpio_state_timeout(i2c->sdaPort, i2c->sdaPin, GPIO_PIN_SET, timeout);}
-
-        // 4. Configure the SDA I/O as General Purpose Output Open-Drain, Low level (Write 0 to GPIOx_ODR).
-        if(sendStopBits){
-            HAL_GPIO_WritePin(i2c->sdaPort, i2c->sdaPin, GPIO_PIN_RESET);
-            wait_for_gpio_state_timeout(i2c->sdaPort, i2c->sdaPin, GPIO_PIN_RESET, timeout); // 5. Check SDA Low level in GPIOx_IDR
-        }
-
-        // 6. Configure the SCL I/O as General Purpose Output Open-Drain, Low level (Write 0 to GPIOx_ODR).
-        HAL_GPIO_WritePin(i2c->sclPort, i2c->sclPin, GPIO_PIN_RESET);
-        wait_for_gpio_state_timeout(i2c->sclPort, i2c->sclPin, GPIO_PIN_RESET, timeout); // 7. Check SCL Low level in GPIOx_IDR.
-
-        // 8. Configure the SCL I/O as General Purpose Output Open-Drain, High level (Write 1 to GPIOx_ODR).
-        HAL_GPIO_WritePin(i2c->sclPort, i2c->sclPin, GPIO_PIN_SET);
-        wait_for_gpio_state_timeout(i2c->sclPort, i2c->sclPin, GPIO_PIN_SET, timeout); // 9. Check SCL High level in GPIOx_IDR.
-
-        // 10. Configure the SDA I/O as General Purpose Output Open-Drain , High level (Write 1 to GPIOx_ODR).
-        if(sendStopBits){
-            HAL_GPIO_WritePin(i2c->sdaPort, i2c->sdaPin, GPIO_PIN_SET);
-            wait_for_gpio_state_timeout(i2c->sdaPort, i2c->sdaPin, GPIO_PIN_SET, timeout); // 11. Check SDA High level in GPIOx_IDR.
-        }
-    }
-
-    // 12. Configure the SCL and SDA I/Os as Alternate function Open-Drain.
-    GPIO_InitStructure.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStructure.Alternate = GPIO_AF4_I2C1;
-
-    GPIO_InitStructure.Pin = i2c->sclPin;
-    HAL_GPIO_Init(i2c->sclPort, &GPIO_InitStructure);
-
-    GPIO_InitStructure.Pin = i2c->sdaPin;
-    HAL_GPIO_Init(i2c->sdaPort, &GPIO_InitStructure);
-
-    // 13. Set SWRST bit in I2Cx_CR1 register.
-    SET_BIT(handler->Instance->CR1, I2C_CR1_SWRST);
-    asm("nop");
-
-    /* 14. Clear SWRST bit in I2Cx_CR1 register. */
-    CLEAR_BIT(handler->Instance->CR1, I2C_CR1_SWRST);
-    asm("nop");
-
-    /* 15. Enable the I2C peripheral by setting the PE bit in I2Cx_CR1 register */
-    SET_BIT(handler->Instance->CR1, I2C_CR1_PE);
-    asm("nop");
-
-    HAL_I2C_Init(handler);
-}
-#endif
 
 } // end anonymous namespace
 
@@ -197,94 +63,73 @@ MPU6050::MPU6050(i2c::I2cDriver* driver)
     : m_driver(driver)
 {
     // Initialize all the variables
-    this -> x_Accel = 0;
-    this -> y_Accel = 0;
-    this -> z_Accel = 0;
-    this -> x_Gyro = 0;
-    this -> y_Gyro = 0;
-    this -> z_Gyro = 0;
+    this->m_data = {NAN};
 }
 
 void MPU6050::init(){
-    MPU6050::Write_Reg(REG_I2C_MST_CTRL, 0b00001101); //0b00001101 is FAST MODE = 400 kHz
-    MPU6050::Write_Reg(REG_ACCEL_CONFIG, 0);
-    MPU6050::Write_Reg(REG_GYRO_CONFIG, 0);
-    MPU6050::Write_Reg(REG_PWR_MGMT_1, 0);
-    MPU6050::Write_Reg(REG_PWR_MGMT_2, 0);
-    MPU6050::Write_Reg(REG_SMPLRT_DIV, CLOCK_DIV_296);
+    MPU6050::write_reg(REG_I2C_MST_CTRL, 0b00001101); //0b00001101 is FAST MODE = 400 kHz
+    MPU6050::write_reg(REG_ACCEL_CONFIG, 0);
+    MPU6050::write_reg(REG_GYRO_CONFIG, 0);
+    MPU6050::write_reg(REG_PWR_MGMT_1, 0);
+    MPU6050::write_reg(REG_PWR_MGMT_2, 0);
+    MPU6050::write_reg(REG_SMPLRT_DIV, CLOCK_DIV_296);
 }
 
-bool MPU6050::Set_LPF(uint8_t lpf){
+bool MPU6050::set_dlpf(uint8_t lpf){
     bool retval = false;
     if(lpf <= 6){
         uint8_t cur_val;
         const uint8_t bitmask = 0b00000111;
 
-        MPU6050::Read_Data(REG_DLPF, &cur_val, 1);
+        MPU6050::read_data(REG_DLPF, &cur_val, 1);
 
         // Note that this register also contains fsync data which should be
         // preserved when the DLPF setting is modified
         cur_val = (cur_val & (~bitmask)) | lpf;
-        if(MPU6050::Write_Reg(REG_DLPF, cur_val)){
+        if(MPU6050::write_reg(REG_DLPF, cur_val)){
             retval = true;
         }
     }
     return retval;
 }
 
-void MPU6050::Read_Gyroscope(){
+bool MPU6050::read_gyroscope(){
     uint8_t buff[6];
+    bool success = MPU6050::read_data(REG_GYRO_XOUT_H, buff, sizeof(buff));
+    if(success){
+        int16_t x = static_cast<uint16_t>((buff[0] << 8) | buff[1]);
+        int16_t y = static_cast<uint16_t>((buff[2] << 8) | buff[3]);
+        int16_t z = static_cast<uint16_t>((buff[4] << 8) | buff[5]);
 
-    if(!MPU6050::Read_Data(REG_GYRO_XOUT_H, buff, sizeof(buff))){
-#ifdef STM32F446xx
-        // Try fix for flag bit silicon bug
-        generateClocks(1, 1);
-#endif
-        return;
+        this->m_data.vx = static_cast<float>(x) / IMU_GY_RANGE;
+        this->m_data.vy = static_cast<float>(y) / IMU_GY_RANGE;
+        this->m_data.vz = static_cast<float>(z) / IMU_GY_RANGE;
     }
-
-    int16_t X = static_cast<uint16_t>((buff[0] << 8) | buff[1]);
-    int16_t Y = static_cast<uint16_t>((buff[2] << 8) | buff[3]);
-    int16_t Z = static_cast<uint16_t>((buff[4] << 8) | buff[5]);
-
-
-    this->x_Gyro = static_cast<float>(X) / IMU_GY_RANGE;
-    this->y_Gyro = static_cast<float>(Y) / IMU_GY_RANGE;
-    this->z_Gyro = static_cast<float>(Z) / IMU_GY_RANGE;
+    return success;
 }
 
-void MPU6050::Read_Accelerometer(){
+bool MPU6050::read_accelerometer(){
     uint8_t buff[6];
+    bool success = MPU6050::read_data(REG_ACCEL_XOUT_H, buff, sizeof(buff));
+    if(success){
+        int16_t x = static_cast<uint16_t>((buff[0] << 8)| buff[1]);
+        int16_t y = static_cast<uint16_t>((buff[2] << 8)| buff[3]);
+        int16_t z = static_cast<uint16_t>((buff[4] << 8)| buff[5]);
 
-    if(!MPU6050::Read_Data(REG_ACCEL_XOUT_H, buff, sizeof(buff))){
-#ifdef STM32F446xx
-        // Try fix for flag bit silicon bug
-        generateClocks(1, 1);
-#endif
+        this->m_data.ax = -(x * g / ACC_RANGE);
+        this->m_data.ay = -(y * g / ACC_RANGE);
+        this->m_data.az = -(z * g / ACC_RANGE);
     }
-
-    int16_t X_A = static_cast<uint16_t>((buff[0] << 8)| buff[1]);
-    int16_t Y_A = static_cast<uint16_t>((buff[2] << 8)| buff[3]);
-    int16_t Z_A = static_cast<uint16_t>((buff[4] << 8)| buff[5]);
-
-    this->x_Accel = -(X_A * g / ACC_RANGE);
-    this->y_Accel = -(Y_A * g / ACC_RANGE);
-    this->z_Accel = -(Z_A * g / ACC_RANGE);
+    return success;
 }
 
-void MPU6050::Fill_Struct(IMUStruct_t* myStruct){
-    myStruct->x_Accel = this->x_Accel;
-    myStruct->y_Accel = this->y_Accel;
-    myStruct->z_Accel = this->z_Accel;
-
-    myStruct->x_Gyro = this->x_Gyro;
-    myStruct->y_Gyro = this->y_Gyro;
-    myStruct->z_Gyro = this->z_Gyro;
+IMUStruct_t MPU6050::get_data(){
+    return m_data;
 }
 
 // Private
 // ----------------------------------------------------------------------------
-bool MPU6050::Write_Reg(
+bool MPU6050::write_reg(
     uint8_t reg_addr,
     uint8_t data
 )
@@ -294,7 +139,7 @@ bool MPU6050::Write_Reg(
     return m_driver->memWrite(I2C_ID, reg_addr, addr_size, &data, num_bytes);
 }
 
-bool MPU6050::Read_Data(
+bool MPU6050::read_data(
     uint8_t reg_addr,
     const uint8_t* p_data,
     uint8_t num_bytes
@@ -311,3 +156,7 @@ bool MPU6050::Read_Data(
 }
 
 } // end namespace imu
+
+/**
+ * @}
+ */

@@ -52,7 +52,7 @@ static char* const pIMUXGyroData = &robotState.msg[
  */
 void copySensorDataToSend(buffer::BufferMaster* BufferMasterPtr) {
     readIMUData = BufferMasterPtr->IMUBuffer.read();
-    memcpy(pIMUXGyroData, (&readIMUData.x_Gyro), sizeof(imu::IMUStruct_t));
+    memcpy(pIMUXGyroData, (&readIMUData.vx), sizeof(imu::IMUStruct_t));
 
     for(int i = 0; i <= periph::MOTOR12; ++i)
     {
