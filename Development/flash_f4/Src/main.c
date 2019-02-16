@@ -46,17 +46,20 @@
 #include "stm32f4xx_hal_flash_ex.h"
 #include "stm32f4xx_hal_flash_ramfunc.h"
 #include "stm32f4xx_hal_flash.h"
+
+#include <time.h>
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
-UART_HandleTypeDef huart2;
-//uint32_t data;
 #define FLASH_START_ADDRESS   ((uint32_t)0x08040000)
+#define size 					2096
+UART_HandleTypeDef huart2;
+uint32_t buffer[size];
+uint32_t buffer_read[size];
 
-uint32_t data;
+
 __attribute__((__section__(".user_data"))) const char userConfig[64];
 /* Private variables ---------------------------------------------------------*/
 
@@ -70,9 +73,7 @@ void SystemClock_Config(void);
 
 void Flash_Write(uint32_t Flash_Address, uint32_t Flash_Data);
 uint32_t Flash_Read(uint32_t Flash_Address);
-
-void Flash_Write_Block(uint32_t address, uint32_t data);
-uint32_t Flash_Read_Block(uint32_t address);
+void Flash_Write_Block(uint32_t* buffer, uint16_t length);
 
 /* USER CODE END PFP */
 
@@ -112,54 +113,50 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  uint32_t buffer[2];
-  buffer[0] = 0x03;
-  buffer[1] = 0x05;
-  Flash_Write(FLASH_START_ADDRESS+4, buffer[0]);
-  /*
-   *
-  for (int i = 0; i< 2; i++){
-	  uint32_t address = i*4;
-	  Flash_Write_Block(address, buffer[i]);
-  }*/
-  //Flash_Write(0x08040008,0x05);  //flash memory increase by 4
 
+  //initialize buffer
+  for (int i = 0; i<size; i++){
+	  buffer[i] = i;
+  }
+  uint32_t start = clock();//benchmark the time
 
+  Flash_Write_Block(buffer, size); //write to flash
+  //read from flash
+  for (int i = 0; i< size; i++){
+	  buffer_read[i] = Flash_Read(FLASH_START_ADDRESS+i*4);
+  }
 
+  uint32_t end = clock();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  uint16_t flag = 0;
+	  for (int i = 0; i< size; i++){
+		  if (buffer_read[i] == buffer[i]){
+			  flag++;
+		  }
+	  }
+	  //test
+	  if (flag == size){
+		  HAL_UART_Transmit(&huart2, (unsigned char *) "valid\n", 5, 1000);
+	  }
+	  else{
+		  HAL_UART_Transmit(&huart2, (unsigned char *) "invalid\n", 8, 1000);
+	  }
 
 
   /* USER CODE END WHILE */
 
 
   /* USER CODE BEGIN 3 */
-	  data = Flash_Read(FLASH_START_ADDRESS + 4);
-	  if (data == 0x03){
-		  HAL_UART_Transmit(&huart2, (unsigned char *) "is3\t", 6, 1000);
-	  }
-	  /*
-	  for (int i = 0; i<2; i++){
-		  uint32_t address = i*4;
-		  data = Flash_READ(FLASH_START_ADDRESS + address);
-		  char d = data +'0';
-		  HAL_UART_Transmit(&huart2, (unsigned char *) &d, 6, 1000);
-		  if (data == 0x03){
-		  	  HAL_UART_Transmit(&huart2, (unsigned char *) "is3\t", 6, 1000);
-		  }
-		  //else if (data == 0x05){
-		//	  HAL_UART_Transmit(&huart2, (unsigned char *) "5\t", 6, 1000);
 
-		  //}
 
-	  }
-	  */
-	  //data = Flash_Read(0x08040008);
-
+  }
+  while(1){
+	  continue;
   }
   /* USER CODE END 3 */
 
@@ -240,17 +237,25 @@ uint32_t Flash_Read(uint32_t Flash_Address){
 	return Flash_Data;
 }
 
-void Flash_Write_Block(uint32_t address, uint32_t data){
-	   address = address + FLASH_START_ADDRESS;
-	   Flash_Write(address, data);
+void Flash_Write_Block(uint32_t* buffer, uint16_t length){
+	   HAL_FLASH_Unlock();
+	   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
+	   FLASH_Erase_Sector(FLASH_SECTOR_6, VOLTAGE_RANGE_3);
+	   for (int i = 0; i< length; i++){
+		   uint32_t address = FLASH_START_ADDRESS + i*4;
+		   HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address,buffer[i]);  //&userConfig[index]
+	   }
+	   HAL_FLASH_Lock();
 }
 
-uint32_t Flash_Read_Block(uint32_t address){
-    uint32_t val = 0;
-    address = address + FLASH_START_ADDRESS;
+/*
+uint32_t Flash_Read_Block(uint32_t length){
+    uint32_t val[length];
+    address = length + FLASH_START_ADDRESS;
     val = *(uint32_t*)address;
     return val;
 }
+*/
 
 
 /* USER CODE END 4 */
