@@ -43,11 +43,18 @@ MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
 FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 512K
+DATA (RWX)        : ORIGIN = 0x08040000, LENGTH = 128k
 }
 
 /* Define output sections */
 SECTIONS
 {
+	.user_data :
+	{
+	  . = ALIGN(4);
+	     *(.user_data)
+	  . = ALIGN(4);
+	} > DATA
   /* The startup code goes first into FLASH */
   .isr_vector :
   {

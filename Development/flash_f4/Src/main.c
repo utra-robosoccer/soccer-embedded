@@ -51,7 +51,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
 UART_HandleTypeDef huart2;
+//uint32_t data;
+#define FLASH_START_ADDRESS   ((uint32_t)0x08040000)
+
 uint32_t data;
 __attribute__((__section__(".user_data"))) const char userConfig[64];
 /* Private variables ---------------------------------------------------------*/
@@ -66,6 +70,9 @@ void SystemClock_Config(void);
 
 void Flash_Write(uint32_t Flash_Address, uint32_t Flash_Data);
 uint32_t Flash_Read(uint32_t Flash_Address);
+
+void Flash_Write_Block(uint32_t address, uint32_t data);
+uint32_t Flash_Read_Block(uint32_t address);
 
 /* USER CODE END PFP */
 
@@ -104,7 +111,20 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  //Flash_Write(0x08040000,0x05);
+
+  uint32_t buffer[2];
+  buffer[0] = 0x03;
+  buffer[1] = 0x05;
+  Flash_Write(FLASH_START_ADDRESS+4, buffer[0]);
+  /*
+   *
+  for (int i = 0; i< 2; i++){
+	  uint32_t address = i*4;
+	  Flash_Write_Block(address, buffer[i]);
+  }*/
+  //Flash_Write(0x08040008,0x05);  //flash memory increase by 4
+
+
 
   /* USER CODE END 2 */
 
@@ -113,15 +133,32 @@ int main(void)
   while (1)
   {
 
+
   /* USER CODE END WHILE */
 
+
   /* USER CODE BEGIN 3 */
-	  char buffer[4];
-	  buffer[0] = 1;
-	  data = Flash_Read(0x08040000);
-	  if (data == 0x05){
-		  HAL_UART_Transmit(&huart2, (unsigned char *) "valid\t", 6, 1000);
+	  data = Flash_Read(FLASH_START_ADDRESS + 4);
+	  if (data == 0x03){
+		  HAL_UART_Transmit(&huart2, (unsigned char *) "is3\t", 6, 1000);
 	  }
+	  /*
+	  for (int i = 0; i<2; i++){
+		  uint32_t address = i*4;
+		  data = Flash_READ(FLASH_START_ADDRESS + address);
+		  char d = data +'0';
+		  HAL_UART_Transmit(&huart2, (unsigned char *) &d, 6, 1000);
+		  if (data == 0x03){
+		  	  HAL_UART_Transmit(&huart2, (unsigned char *) "is3\t", 6, 1000);
+		  }
+		  //else if (data == 0x05){
+		//	  HAL_UART_Transmit(&huart2, (unsigned char *) "5\t", 6, 1000);
+
+		  //}
+
+	  }
+	  */
+	  //data = Flash_Read(0x08040008);
 
   }
   /* USER CODE END 3 */
@@ -201,6 +238,18 @@ uint32_t Flash_Read(uint32_t Flash_Address){
 	uint32_t Flash_Data;
 	Flash_Data = *(uint32_t*) Flash_Address;
 	return Flash_Data;
+}
+
+void Flash_Write_Block(uint32_t address, uint32_t data){
+	   address = address + FLASH_START_ADDRESS;
+	   Flash_Write(address, data);
+}
+
+uint32_t Flash_Read_Block(uint32_t address){
+    uint32_t val = 0;
+    address = address + FLASH_START_ADDRESS;
+    val = *(uint32_t*)address;
+    return val;
 }
 
 
