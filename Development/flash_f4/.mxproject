@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=/Users/sherrychan/Desktop/robosoccer/flash_f4/Inc
+HeaderPath=/Users/sherrychan/Documents/GitHub/soccer-embedded/Development/flash_f4/Inc
 HeaderFiles=stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;gpio.h;usart.h;
-SourcePath=/Users/sherrychan/Desktop/robosoccer/flash_f4/Src
+SourcePath=/Users/sherrychan/Documents/GitHub/soccer-embedded/Development/flash_f4/Src
 SourceFiles=stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;gpio.c;usart.c;
 
 [PreviousLibFiles]

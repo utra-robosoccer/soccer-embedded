@@ -118,27 +118,37 @@ int main(void)
   for (int i = 0; i<size; i++){
 	  buffer[i] = i;
   }
-  uint32_t start = clock();//benchmark the time
+ //uint32_t start = clock();//benchmark the time
+
 
   Flash_Write_Block(buffer, size); //write to flash
+
   //read from flash
   for (int i = 0; i< size; i++){
 	  buffer_read[i] = Flash_Read(FLASH_START_ADDRESS+i*4);
   }
 
-  uint32_t end = clock();
+  //uint32_t end = clock();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  /*
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	  Flash_Write_Block(buffer, size); //comment out
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+	  Flash_Write_Block(buffer, size);
+	  */
+
 	  uint16_t flag = 0;
 	  for (int i = 0; i< size; i++){
 		  if (buffer_read[i] == buffer[i]){
 			  flag++;
 		  }
 	  }
+
 	  //test
 	  if (flag == size){
 		  HAL_UART_Transmit(&huart2, (unsigned char *) "valid\n", 5, 1000);
@@ -149,7 +159,6 @@ int main(void)
 
 
   /* USER CODE END WHILE */
-
 
   /* USER CODE BEGIN 3 */
 
