@@ -46,7 +46,7 @@
 #include "stm32f4xx_hal_flash_ex.h"
 #include "stm32f4xx_hal_flash_ramfunc.h"
 #include "stm32f4xx_hal_flash.h"
-
+#include "string.h"
 #include <time.h>
 /* USER CODE END Includes */
 
@@ -54,7 +54,7 @@
 
 /* USER CODE BEGIN PV */
 #define FLASH_START_ADDRESS   ((uint32_t)0x08040000)
-#define size 					2096
+#define size 					1*1024
 UART_HandleTypeDef huart2;
 uint32_t buffer[size];
 uint32_t buffer_read[size];
@@ -111,24 +111,55 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+
+
   /* USER CODE BEGIN 2 */
-
-
   //initialize buffer
   for (int i = 0; i<size; i++){
 	  buffer[i] = i;
   }
- //uint32_t start = clock();//benchmark the time
 
 
-  Flash_Write_Block(buffer, size); //write to flash
+  //Flash_Write_Block(buffer, size); //write to flash
+
+  //Flash_Write_Block(buffer, size);
 
   //read from flash
   for (int i = 0; i< size; i++){
 	  buffer_read[i] = Flash_Read(FLASH_START_ADDRESS+i*4);
   }
 
-  //uint32_t end = clock();
+
+
+
+
+  /*****bench mark the time ************************************
+	//doesnt work
+  //erase one sector: 16Kb
+
+  HAL_FLASH_Unlock();
+  int erase_start = HAL_GetTick();
+  FLASH_Erase_Sector(FLASH_SECTOR_6, VOLTAGE_RANGE_3);
+  int erase_end = HAL_GetTick();
+  HAL_FLASH_Lock();
+
+  int erase_duration = erase_end - erase_start;
+  char erase_time[16];
+  sprintf(erase_time, "%d", erase_duration);
+  HAL_UART_Transmit(&huart2, (unsigned char*)"erase 16Kb:\n", 11, 1000);
+  HAL_UART_Transmit(&huart2, (unsigned char*)erase_time, 16, 1000); //print the erase duration
+
+  //write to sector
+  int write_start = HAL_GetTick();
+  Flash_Write_Block(buffer, size);
+  int write_end = HAL_GetTick();
+  int write_duration = write_end - write_start;
+  char write_time[16];
+  sprintf(write_time, "%d", write_duration);
+  HAL_UART_Transmit(&huart2, (unsigned char*)"write 1Kb:\n", 10, 1000);
+  HAL_UART_Transmit(&huart2, (unsigned char*)write_time, 16, 1000);
+  //****************************************************************
+	*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -136,12 +167,32 @@ int main(void)
   while (1)
   {
 	  /*
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-	  Flash_Write_Block(buffer, size); //comment out
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-	  Flash_Write_Block(buffer, size);
+	  //test HAL_tick()*******************************
+	  int start = HAL_GetTick();
+	  HAL_Delay(500);
+	  int end = HAL_GetTick();
+	  char buffer_time[16];
+	  int duration = end - start;
+	  sprintf(buffer_time, "%d", duration);
+	  //HAL_UART_Transmit(&huart2, (unsigned char*)"start\n", 5, 1000);
+	  HAL_UART_Transmit(&huart2, (unsigned char *)buffer_time, 4, 1000);
+	  //***********************************************************
 	  */
 
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+	  Flash_Write_Block(buffer, size); //comment out
+	  //Flash_Write(FLASH_START_ADDRESS, 0);
+	  //HAL_FLASH_Unlock();
+	  //FLASH_Erase_Sector(FLASH_SECTOR_6, VOLTAGE_RANGE_3);
+	  //HAL_FLASH_Lock();
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+	  //Flash_Write(FLASH_START_ADDRESS, 0);
+	  Flash_Write_Block(buffer, size);
+	  //HAL_FLASH_Unlock();
+	  //FLASH_Erase_Sector(FLASH_SECTOR_6, VOLTAGE_RANGE_3);
+	  //HAL_FLASH_Lock();
+
+	  //buffer[0] = 3;
 	  uint16_t flag = 0;
 	  for (int i = 0; i< size; i++){
 		  if (buffer_read[i] == buffer[i]){
@@ -161,11 +212,6 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
-
-  }
-  while(1){
-	  continue;
   }
   /* USER CODE END 3 */
 
@@ -234,7 +280,7 @@ void Flash_Write(uint32_t Flash_Address, uint32_t Flash_Data){
 	HAL_FLASH_Unlock();
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
     FLASH_Erase_Sector(FLASH_SECTOR_6, VOLTAGE_RANGE_3);
-	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, Flash_Address,Flash_Data);  //&userConfig[index]
+	HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, Flash_Address,Flash_Data);  //&userConfig[index] ////////comment
 	HAL_FLASH_Lock();
 }
 
