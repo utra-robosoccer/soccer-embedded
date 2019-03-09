@@ -26,11 +26,10 @@
 #include "cmsis_os.h"
 #include "OsInterface.h"
 using cmsis::OsInterface;
-using hal::IO_Type;
-using hal::UartInterface;
 #endif
 
-
+using hal::IO_Type;
+using hal::UartInterface;
 
 
 /******************************** UartDriver *********************************/
@@ -159,7 +158,7 @@ private:
     bool m_hw_is_initialized = false;
 
     /** @brief Maximum permitted time for blocking on a data transfer */
-    TickType_t m_max_block_time;
+    uint32_t m_max_block_time;
 };
 
 } // end namespace uart

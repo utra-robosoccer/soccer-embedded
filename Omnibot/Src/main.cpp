@@ -50,6 +50,10 @@
 #include "Dynamixel_Types.h"
 #include "DynamixelProtocolV1_IO.h"
 #include "DynamixelProtocolV1.h"
+
+//new includes
+#include "GpioInterface.h"
+#include "UartInterface.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/

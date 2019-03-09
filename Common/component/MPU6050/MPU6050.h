@@ -24,8 +24,11 @@
 /********************************* Includes **********************************/
 #include <stdint.h>
 #include "usart.h"
-#include "Notification.h"
-#include "cmsis_os.h"
+
+#if defined(THREADED)
+	#include "Notification.h"
+	#include "cmsis_os.h"
+#endif
 
 
 
