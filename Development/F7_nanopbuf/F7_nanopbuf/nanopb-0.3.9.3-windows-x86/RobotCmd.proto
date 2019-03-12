@@ -1,0 +1,6 @@
+syntax = "proto2";
+import "generator/proto/nanopb.proto";
+
+message Hello {
+    required bytes message = 1 [(nanopb).max_size = 5];
+}

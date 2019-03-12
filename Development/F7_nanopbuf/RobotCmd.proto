@@ -1,0 +1,5 @@
+syntax = "proto2";
+
+message Hello {
+    required bytes message = 1 [(nanopb).max_size = 5];;
+}
