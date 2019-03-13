@@ -90,7 +90,16 @@ osStaticThreadDef_t defaultTaskControlBlock;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-   
+static char invertCase(char c)
+{
+  const int difference = 'a' - 'A';
+  if (c >= 'A' && c <= 'Z')
+    return c + difference;
+  else if (c >= 'a' && c <= 'z')
+    return c - difference;
+  else
+    return c;
+}
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -164,52 +173,52 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
     uint8_t buffer[128] = {};
-    const size_t message_length = 5;
+    const size_t message_length = 43;
     bool status = false;
 
+    // Declare and zero-initialize a message of type Hello
     Hello message = Hello_init_zero;
-    // Loop on receiving bytes and echoing them back.
 
-    HAL_UART_Receive_DMA(&huart3, (uint8_t*)buffer, 7);
+    // Receive the serialized message, which has length of the message field
+    // plus two other bytes added in the encoding
+    HAL_UART_Receive_DMA(&huart3, (uint8_t*)buffer, message_length + 2);
     osSignalWait(rx_signal, osWaitForever);
 
+    // Decode the message and find the bytes in the Hello.message field
     pb_istream_t stream = pb_istream_from_buffer(buffer, sizeof(buffer));
     status = pb_decode(&stream, Hello_fields, &message);
     if (!status)
     {
         HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
     }
-
     uint8_t *recv_data = (uint8_t*)&message.message.bytes;
 
-    uint8_t send_data[5] = {};
-
-    // Copy received data to send
+    // Perform modifications to the message
+    uint8_t send_data[43] = {};
     for (int i = 0; i < message_length; i++)
     {
-        send_data[i] = recv_data[i];
+    	// Invert the case of the message so we know it's from the MCU
+        send_data[i] = invertCase(recv_data[i]);
     }
-    // Mark a character of the data to send so we know it's from the MCU
-    send_data[4] = 'A';
 
+    // Declare a new message and set its fields
     Hello message_out = Hello_init_zero;
-
-    pb_ostream_t stream_out = pb_ostream_from_buffer(buffer, sizeof(buffer));
-
     for (int i = 0; i < message_length; i++)
     {
     	message_out.message.bytes[i] = send_data[i];
     }
-    message_out.message.size = 5;
+    message_out.message.size = message_length;
 
+    // Encode the new message for returning back to the PC
+    pb_ostream_t stream_out = pb_ostream_from_buffer(buffer, sizeof(buffer));
     status = pb_encode(&stream_out, Hello_fields, &message_out);
-    size_t message_length_out = stream_out.bytes_written;
-
     if (!status)
     {
     	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
     }
 
+    // Send the encoded message back to the PC
+    size_t message_length_out = stream_out.bytes_written;
     HAL_UART_Transmit_DMA(&huart3, (uint8_t*)buffer, message_length_out);
     osSignalWait(tx_signal, osWaitForever);
   }
