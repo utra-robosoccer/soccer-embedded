@@ -81,7 +81,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-static uint8_t send_data[5] = {};
 const uint32_t rx_signal = 0x00000005;
 const uint32_t tx_signal = 0x00000050;
 /* USER CODE END Variables */
@@ -159,22 +158,22 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  uint8_t buffer[128] = {};
-  const size_t message_length = 5;
-  bool status = false;
-
-  Hello message = Hello_init_zero;
 
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
   {
+    uint8_t buffer[128] = {};
+    const size_t message_length = 5;
+    bool status = false;
+
+    Hello message = Hello_init_zero;
     // Loop on receiving bytes and echoing them back.
 
     HAL_UART_Receive_DMA(&huart3, (uint8_t*)buffer, 7);
     osSignalWait(rx_signal, osWaitForever);
 
-    pb_istream_t stream = pb_istream_from_buffer(buffer, 7);
+    pb_istream_t stream = pb_istream_from_buffer(buffer, sizeof(buffer));
     status = pb_decode(&stream, Hello_fields, &message);
     if (!status)
     {
@@ -182,6 +181,8 @@ void StartDefaultTask(void const * argument)
     }
 
     uint8_t *recv_data = (uint8_t*)&message.message.bytes;
+
+    uint8_t send_data[5] = {};
 
     // Copy received data to send
     for (int i = 0; i < message_length; i++)
@@ -191,19 +192,26 @@ void StartDefaultTask(void const * argument)
     // Mark a character of the data to send so we know it's from the MCU
     send_data[4] = 'A';
 
-    HAL_UART_Transmit_DMA(&huart3, (uint8_t*)send_data, sizeof(send_data));
-    osSignalWait(tx_signal, osWaitForever);
+    Hello message_out = Hello_init_zero;
 
-    // Reset the tx/rx arrays so we know the next transmission has written new
-    // data
-    for (int i = 0; i < sizeof(recv_data); i++)
+    pb_ostream_t stream_out = pb_ostream_from_buffer(buffer, sizeof(buffer));
+
+    for (int i = 0; i < message_length; i++)
     {
-    	recv_data[i] = '\0';
+    	message_out.message.bytes[i] = send_data[i];
     }
-    for (int i = 0; i < sizeof(send_data); i++)
-	{
-    	send_data[i] = '\0';
-	}
+    message_out.message.size = 5;
+
+    status = pb_encode(&stream_out, Hello_fields, &message_out);
+    size_t message_length_out = stream_out.bytes_written;
+
+    if (!status)
+    {
+    	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
+    }
+
+    HAL_UART_Transmit_DMA(&huart3, (uint8_t*)buffer, message_length_out);
+    osSignalWait(tx_signal, osWaitForever);
   }
   /* USER CODE END StartDefaultTask */
 }
