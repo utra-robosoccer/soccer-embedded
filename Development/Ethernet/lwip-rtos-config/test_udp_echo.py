@@ -13,9 +13,9 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_address = ('192.168.0.59', 7)
 sock.bind(('', 7))
 
-message = 'this is a message of length 80 chars. asdfghjklasdfghjklasdfghjklasdfghjkl ++++'.encode()
+message = 'this is a message of'.encode()
 
-num_samples = 500
+num_samples = 5
 
 times = []
 
@@ -36,7 +36,7 @@ try:
         t1 = time.perf_counter()
         dt = t1 - t0
         total_time += dt
-        #print('received "{}"'.format(data))
+        print('received "{}"'.format(data))
         times.append(dt)
 
     f = open('times', 'a')

@@ -75,7 +75,8 @@ osSemaphoreId recvSemHandle;
 osStaticSemaphoreDef_t recvSemControlBlock;
 
 /* USER CODE BEGIN Variables */
-
+const uint32_t rx_signal = 0x00000005;
+const uint32_t tx_signal = 0x00000050;
 extern struct netif gnetif;
 struct udp_pcb * echo_server_pcb;
 
@@ -202,20 +203,20 @@ void StartDefaultTask(void const * argument)
       udp_remove(echo_server_pcb);
     }
   }
-  osSemaphoreWait(recvSemHandle, osWaitForever);
-  xTaskNotify(ethernetInputTaHandle, 1UL, eNoAction);
+  //osSemaphoreWait(recvSemHandle, osWaitForever);
+  //xTaskNotify(ethernetInputTaHandle, 1UL, eNoAction);
 
 
   /* Infinite loop */
   for(;;)
   {
-	osSemaphoreWait(recvSemHandle, osWaitForever);
+	  osSignalWait(rx_signal, osWaitForever);
 	/* Connect to the remote client */
 
 	pbuf_copy_partial(P, buf + 7, P->len, 0);
 
-	xTaskNotify(txTaskHandle, 1UL, eNoAction);
-	xTaskNotifyWait(UINT32_MAX, UINT32_MAX, NULL, portMAX_DELAY);
+	osSignalSet(txTaskHandle, tx_signal);
+	osSignalWait(tx_signal, osWaitForever);
     osDelay(1);
     //sys_check_timeouts();
     //osThreadTerminate(NULL);
@@ -242,7 +243,7 @@ void StartTxTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  xTaskNotifyWait(UINT32_MAX, UINT32_MAX, NULL, portMAX_DELAY);
+	  osSignalWait(tx_signal, osWaitForever);
 
 	  struct pbuf *pret = pbuf_alloc(PBUF_TRANSPORT, cmd_len, PBUF_RAM);
 
@@ -268,7 +269,7 @@ void StartTxTask(void const * argument)
 	  pbuf_free(pret);
 	  pbuf_free(P);
 	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-	xTaskNotify(defaultTaskHandle, 1UL, eNoAction);
+	osSignalSet(defaultTaskHandle, tx_signal);
 
     osDelay(1);
   }
@@ -286,7 +287,7 @@ void handleReceive (void *arg, struct udp_pcb *pcb, struct pbuf *p,
 	ADDR= *addr;
 	PORT=port;
 
-	osSemaphoreRelease(recvSemHandle);
+	osSignalSet(defaultTaskHandle, rx_signal);
 }
      
 /* USER CODE END Application */
