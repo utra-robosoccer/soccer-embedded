@@ -86,14 +86,18 @@ UdpDriver::UdpDriver(
     const u16_t m_port_src,
     const u16_t m_port_dest,
     const UdpRawInterface *m_udp_if,
-    const OsInterface *m_os_if
+    const OsInterface *m_os_if,
+    const uint32_t m_recv_signal,
+    const osThreadId m_recv_signal_task
 ) :
     m_ip_addr_src(m_ip_addr_src),
     m_ip_addr_dest(m_ip_addr_dest),
     m_port_src(m_port_src),
     m_port_dest(m_port_dest),
     m_udp_if(m_udp_if),
-    m_os_if(m_os_if)
+    m_os_if(m_os_if),
+    m_recv_signal(m_recv_signal),
+    m_recv_signal_task(m_recv_signal_task)
 {
 
 }
@@ -110,15 +114,6 @@ UdpDriver::~UdpDriver()
 bool UdpDriver::initialize()
 {
     if (!getUdpIf() || !getOsIf())
-    {
-        return false;
-    }
-
-    osSemaphoreStaticDef(UdpDriverRecv, &m_recv_semaphore_control_block);
-    if ((m_recv_semaphore = getOsIf()->OS_osSemaphoreCreate(
-            osSemaphore(UdpDriverRecv),
-            1
-            )) == NULL)
     {
         return false;
     }
@@ -301,18 +296,12 @@ bool UdpDriver::bytesToPacket(
 
 void UdpDriver::signalReceiveCplt()
 {
-    getOsIf()->OS_osSemaphoreRelease(m_recv_semaphore);
+    getOsIf()->OS_osSignalSet(m_recv_signal_task, m_recv_signal);
 }
 
 void UdpDriver::waitReceiveCplt()
 {
-    while (getOsIf()->OS_osSemaphoreWait(
-            m_recv_semaphore,
-            SEMAPHORE_WAIT_NUM_MS
-            ) != osOK)
-    {
-        ;
-    }
+    getOsIf()->OS_osSignalWait(m_recv_signal, osWaitForever);
 }
 
 void UdpDriver::setRecvPbuf(struct pbuf *p_pbuf)

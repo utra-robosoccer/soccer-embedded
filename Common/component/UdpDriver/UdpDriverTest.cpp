@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "cmsis_os.h"
 #include "OsInterfaceMock.h"
 #include "UdpRawInterfaceMock.h"
 #include "UdpDriver/UdpDriver.h"
@@ -47,6 +48,8 @@ namespace {
 // Constants
 // ----------------------------------------------------------------------------
 const ip_addr_t ZERO_IP_ADDR_T = {0x0};
+const osThreadId TEST_THREAD_ID = reinterpret_cast<osThreadId>(5);
+constexpr uint32_t TEST_SIGNAL = 0x00000050;
 
 // Classes & structs
 // ----------------------------------------------------------------------------
@@ -77,7 +80,7 @@ TEST_F(UdpDriverTest, InitializeMembersWithParameterizedConstructor) {
     const ip_addr_t TEST_IP_ADDR_PC = {0xC0A80002};
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     EXPECT_EQ(TEST_IP_ADDR, udpDriverUnderTest.getIpAddrSrc());
     EXPECT_EQ(TEST_IP_ADDR_PC, udpDriverUnderTest.getIpAddrDest());
@@ -91,11 +94,10 @@ TEST_F(UdpDriverTest, SucceedInitialize) {
     const ip_addr_t TEST_IP_ADDR = {0xC0A80008};
     const ip_addr_t TEST_IP_ADDR_PC = {0xC0A80002};
 
-    EXPECT_CALL(os_if, OS_osSemaphoreCreate(_, _)).Times(1).WillOnce(Return((osSemaphoreId) 1));
     EXPECT_CALL(os_if, OS_osMutexCreate(_)).Times(1).WillOnce(Return((osMutexId) 1));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_TRUE(udpDriverUnderTest.initialize());
 }
@@ -105,7 +107,7 @@ TEST_F(UdpDriverTest, FailInitializeWhenUdpInterfaceNull) {
     const ip_addr_t TEST_IP_ADDR_PC = {0xC0A80002};
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, nullptr, &os_if);
+            (u16_t) 6340, nullptr, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.initialize());
 }
@@ -115,7 +117,7 @@ TEST_F(UdpDriverTest, FailInitializeWhenOsInterfaceNull) {
     const ip_addr_t TEST_IP_ADDR_PC = {0xC0A80002};
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, nullptr);
+            (u16_t) 6340, &udp_if, nullptr, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.initialize());
 }
@@ -124,24 +126,10 @@ TEST_F(UdpDriverTest, FailInitializeWhenMutexCreateUnsuccessful) {
     const ip_addr_t TEST_IP_ADDR = {0xC0A80008};
     const ip_addr_t TEST_IP_ADDR_PC = {0xC0A80002};
 
-    EXPECT_CALL(os_if, OS_osSemaphoreCreate(_, _)).Times(AnyNumber()).WillOnce(Return((osSemaphoreId) 1));
     EXPECT_CALL(os_if, OS_osMutexCreate(_)).Times(1).WillOnce(Return((osMutexId) NULL));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
-
-    ASSERT_FALSE(udpDriverUnderTest.initialize());
-}
-
-TEST_F(UdpDriverTest, FailInitializeWhenSemaphoreCreateUnsuccessful) {
-    const ip_addr_t TEST_IP_ADDR = {0xC0A80008};
-    const ip_addr_t TEST_IP_ADDR_PC = {0xC0A80002};
-
-    EXPECT_CALL(os_if, OS_osSemaphoreCreate(_, _)).Times(1).WillOnce(Return((osSemaphoreId) NULL));
-    EXPECT_CALL(os_if, OS_osMutexCreate(_)).Times(AnyNumber()).WillOnce(Return((osMutexId) 1));
-
-    UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.initialize());
 }
@@ -154,7 +142,7 @@ TEST_F(UdpDriverTest, SucceedSetupReceive) {
     EXPECT_CALL(udp_if, udpNew()).Times(1).WillOnce(Return(&udpPcb));
 
     UdpDriver udpDriverUnderTest(ZERO_IP_ADDR_T, ZERO_IP_ADDR_T, (u16_t) 0, (u16_t) 0,
-            &udp_if, &os_if);
+            &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
     ASSERT_TRUE(udpDriverUnderTest.setupReceive(nullptr));
     EXPECT_EQ(udpDriverUnderTest.getPcb(), &udpPcb);
 }
@@ -163,7 +151,7 @@ TEST_F(UdpDriverTest, FailSetupReceiveOnUdpNew) {
     EXPECT_CALL(udp_if, udpNew()).Times(1).WillOnce(Return(nullptr));
 
     UdpDriver udpDriverUnderTest(ZERO_IP_ADDR_T, ZERO_IP_ADDR_T, (u16_t) 0, (u16_t) 0,
-            &udp_if, &os_if);
+            &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
     ASSERT_FALSE(udpDriverUnderTest.setupReceive(nullptr));
     EXPECT_EQ(udpDriverUnderTest.getPcb(), nullptr);
 }
@@ -176,7 +164,7 @@ TEST_F(UdpDriverTest, FailSetupReceiveOnUdpBind) {
     EXPECT_CALL(udp_if, udpNew()).Times(1).WillOnce(Return(&udpPcb));
 
     UdpDriver udpDriverUnderTest(ZERO_IP_ADDR_T, ZERO_IP_ADDR_T, (u16_t) 0, (u16_t) 0,
-            &udp_if, &os_if);
+            &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
     ASSERT_FALSE(udpDriverUnderTest.setupReceive(nullptr));
 
     /* Check the PCB has been removed. */
@@ -192,10 +180,10 @@ TEST_F(UdpDriverTest, SucceedReceive) {
 
     EXPECT_CALL(udp_if, pbufFree(_)).Times(1);
     EXPECT_CALL(udp_if, pbufCopyPartial(_, _, _, _)).Times(1).WillOnce(Return((u16_t) 1));
-    EXPECT_CALL(os_if, OS_osSemaphoreWait(_, _)).Times(1).WillOnce(Return(osOK));
+    EXPECT_CALL(os_if, OS_osSignalWait(_, _)).Times(1);
 
     UdpDriver udpDriverUnderTest(ZERO_IP_ADDR_T, ZERO_IP_ADDR_T, (u16_t) 0, (u16_t) 0,
-            &udp_if, &os_if);
+            &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     udpDriverUnderTest.setRecvPbuf(&rxPbuf);
 
@@ -207,10 +195,10 @@ TEST_F(UdpDriverTest, FailReceiveRxArrayNull) {
 
     EXPECT_CALL(os_if, OS_osMutexWait(_, _)).WillRepeatedly(Return(osOK));
 
-    EXPECT_CALL(os_if, OS_osSemaphoreWait(_, _)).Times(1).WillOnce(Return(osOK));
+    EXPECT_CALL(os_if, OS_osSignalWait(_, _)).Times(1);
 
     UdpDriver udpDriverUnderTest(ZERO_IP_ADDR_T, ZERO_IP_ADDR_T, (u16_t) 0, (u16_t) 0,
-            &udp_if, &os_if);
+            &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     udpDriverUnderTest.setRecvPbuf(&rxPbuf);
 
@@ -222,10 +210,10 @@ TEST_F(UdpDriverTest, FailReceiveRxPbufNull) {
 
     EXPECT_CALL(os_if, OS_osMutexWait(_, _)).WillRepeatedly(Return(osOK));
 
-    EXPECT_CALL(os_if, OS_osSemaphoreWait(_, _)).Times(1).WillOnce(Return(osOK));
+    EXPECT_CALL(os_if, OS_osSignalWait(_, _)).Times(1);
 
     UdpDriver udpDriverUnderTest(ZERO_IP_ADDR_T, ZERO_IP_ADDR_T, (u16_t) 0, (u16_t) 0,
-            &udp_if, &os_if);
+            &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     udpDriverUnderTest.setRecvPbuf(NULL);
 
@@ -239,10 +227,10 @@ TEST_F(UdpDriverTest, FailReceiveZeroBytesCopied) {
     EXPECT_CALL(os_if, OS_osMutexWait(_, _)).WillRepeatedly(Return(osOK));
 
     EXPECT_CALL(udp_if, pbufCopyPartial(_, _, _, _)).Times(1).WillOnce(Return((u16_t) 0));
-    EXPECT_CALL(os_if, OS_osSemaphoreWait(_, _)).Times(1).WillOnce(Return(osOK));
+    EXPECT_CALL(os_if, OS_osSignalWait(_, _)).Times(1);
 
     UdpDriver udpDriverUnderTest(ZERO_IP_ADDR_T, ZERO_IP_ADDR_T, (u16_t) 0, (u16_t) 0,
-            &udp_if, &os_if);
+            &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     udpDriverUnderTest.setRecvPbuf(&rxPbuf);
 
@@ -263,7 +251,7 @@ TEST_F(UdpDriverTest, SucceedTransmit) {
     EXPECT_CALL(udp_if, pbufAlloc(PBUF_TRANSPORT, _, PBUF_RAM)).Times(1).WillOnce(Return(&txPbuf));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_TRUE(udpDriverUnderTest.transmit(txBuff, sizeof(txBuff)));
 }
@@ -277,7 +265,7 @@ TEST_F(UdpDriverTest, FailTransmitWhenTxBuffNull) {
     EXPECT_CALL(udp_if, pbufAlloc(PBUF_TRANSPORT, _, PBUF_RAM)).Times(1).WillOnce(Return(&txPbuf));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.transmit(nullptr, 10));
 }
@@ -291,7 +279,7 @@ TEST_F(UdpDriverTest, FailTransmitWhenPbufAllocUnsuccessful) {
     EXPECT_CALL(udp_if, pbufAlloc(PBUF_TRANSPORT, _, PBUF_RAM)).Times(1).WillOnce(Return((struct pbuf *) NULL));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.transmit(txBuff, sizeof(txBuff)));
 }
@@ -306,7 +294,7 @@ TEST_F(UdpDriverTest, FailTransmitWhenPbufTakeUnsuccessful) {
     EXPECT_CALL(udp_if, pbufAlloc(PBUF_TRANSPORT, _, PBUF_RAM)).Times(1).WillOnce(Return(&txPbuf));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.transmit(txBuff, sizeof(txBuff)));
 }
@@ -322,7 +310,7 @@ TEST_F(UdpDriverTest, FailTransmitWhenUdpConnectUnsuccessful) {
     EXPECT_CALL(udp_if, pbufAlloc(PBUF_TRANSPORT, _, PBUF_RAM)).Times(1).WillOnce(Return(&txPbuf));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.transmit(txBuff, sizeof(txBuff)));
 }
@@ -340,7 +328,7 @@ TEST_F(UdpDriverTest, FailTransmitWhenUdpSendUnsuccessful) {
     EXPECT_CALL(udp_if, pbufAlloc(PBUF_TRANSPORT, _, PBUF_RAM)).Times(1).WillOnce(Return(&txPbuf));
 
     UdpDriver udpDriverUnderTest(TEST_IP_ADDR, TEST_IP_ADDR_PC, (u16_t) 7,
-            (u16_t) 6340, &udp_if, &os_if);
+            (u16_t) 6340, &udp_if, &os_if, TEST_SIGNAL, TEST_THREAD_ID);
 
     ASSERT_FALSE(udpDriverUnderTest.transmit(txBuff, sizeof(txBuff)));
 }

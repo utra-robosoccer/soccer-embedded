@@ -146,6 +146,22 @@ osStatus OsInterfaceImpl::OS_osSemaphoreRelease (
      return osSemaphoreRelease(semaphore_id);
 }
 
+osEvent OsInterfaceImpl::OS_osSignalWait (
+        int32_t signals,
+        uint32_t millisec
+) const
+{
+    return osSignalWait(signals, millisec);
+}
+
+int32_t OsInterfaceImpl::OS_osSignalSet (
+        osThreadId thread_id,
+        int32_t signals
+) const
+{
+    return osSignalSet(thread_id, signals);
+}
+
 } // end namespace os
 
 /**

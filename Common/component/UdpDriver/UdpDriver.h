@@ -43,7 +43,9 @@ public:
               const u16_t m_port_src,
               const u16_t m_port_dest,
               const UdpRawInterface *m_udp_if,
-              const OsInterface *m_os_if);
+              const OsInterface *m_os_if,
+              const uint32_t m_recv_signal,
+              const osThreadId m_recv_signal_task);
     ~UdpDriver();
 
     /* User-facing - typically call directly. */
@@ -91,14 +93,13 @@ private:
     const OsInterface *m_os_if = nullptr;
 
     /* Data modified internally by the Raw API. */
-    /* TODO: decide whether NULL or nullptr, since lwIP API will use NULL when setting these. */
     struct udp_pcb *m_pcb = nullptr;
     struct pbuf *m_recv_pbuf = nullptr;
 
     /* Synchronization. */
-    mutable osSemaphoreId m_recv_semaphore; /* TODO: replace with binary semaphore-style task notification. */
-    mutable osStaticSemaphoreDef_t m_recv_semaphore_control_block;
-    mutable osMutexId m_recv_pbuf_mutex;
+    const uint32_t m_recv_signal = 0; // Set when a packet is received
+    const osThreadId m_recv_signal_task = reinterpret_cast<osThreadId>(0); // Task where receive() is called from
+    mutable osMutexId m_recv_pbuf_mutex; // Control access to the recv pbuf
     mutable osStaticMutexDef_t m_recv_pbuf_mutex_control_block;
 };
 

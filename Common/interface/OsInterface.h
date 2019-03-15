@@ -97,6 +97,16 @@ public:
     virtual osStatus OS_osSemaphoreRelease (
             osSemaphoreId semaphore_id
     ) const = 0;
+
+    virtual osEvent OS_osSignalWait (
+            int32_t signals,
+            uint32_t millisec
+    ) const = 0;
+
+    virtual int32_t OS_osSignalSet (
+            osThreadId thread_id,
+            int32_t signals
+    ) const = 0;
 };
 
 } // end namespace cmsis

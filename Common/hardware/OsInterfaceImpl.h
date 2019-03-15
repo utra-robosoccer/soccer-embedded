@@ -99,6 +99,16 @@ public:
      osStatus OS_osSemaphoreRelease (
         osSemaphoreId semaphore_id
     ) const override final;
+
+    osEvent OS_osSignalWait (
+            int32_t signals,
+            uint32_t millisec
+    ) const override final;
+
+    int32_t OS_osSignalSet (
+            osThreadId thread_id,
+            int32_t signals
+    ) const override final;
 };
 
 } // end namespace os

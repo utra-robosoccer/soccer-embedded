@@ -43,51 +43,51 @@ public:
     MOCK_CONST_METHOD4(
         OS_xTaskNotifyWait,
         BaseType_t(
-            uint32_t ulBitsToClearOnEntry,
-            uint32_t ulBitsToClearOnExit,
-            uint32_t* pulNotificationValue,
-            TickType_t xTicksToWait
+            uint32_t,
+            uint32_t,
+            uint32_t*,
+            TickType_t
         )
     );
 
     MOCK_CONST_METHOD3(
         OS_xQueueReceive,
         BaseType_t(
-            QueueHandle_t xQueue,
-            void* pvBuffer,
-            TickType_t xTicksToWait
+            QueueHandle_t,
+            void*,
+            TickType_t
         )
     );
 
     MOCK_CONST_METHOD3(
         OS_xQueueSend,
         BaseType_t(
-            QueueHandle_t xQueue,
-            const void * pvItemToQueue,
-            TickType_t xTicksToWait
+            QueueHandle_t,
+            const void *,
+            TickType_t
         )
     );
 
     MOCK_CONST_METHOD2(
         OS_xSemaphoreTake,
         BaseType_t(
-            SemaphoreHandle_t xSemaphore,
-            TickType_t xBlockTime
+            SemaphoreHandle_t,
+            TickType_t
         )
     );
 
     MOCK_CONST_METHOD1(
         OS_xSemaphoreGive,
         BaseType_t(
-            SemaphoreHandle_t xSemaphore
+            SemaphoreHandle_t
         )
     );
 
     MOCK_CONST_METHOD2(
         OS_vTaskDelayUntil,
         void(
-            TickType_t* const pxPreviousWakeTime,
-            const TickType_t xTimeIncrement
+            TickType_t* const,
+            const TickType_t
         )
     );
 
@@ -124,7 +124,7 @@ public:
     MOCK_CONST_METHOD1(
         OS_osMutexRelease,
         osStatus(
-                osMutexId
+            osMutexId
         )
     );
 
@@ -132,14 +132,30 @@ public:
         OS_osSemaphoreWait,
         int32_t(
             osSemaphoreId,
-            uint32_t millisec
+            uint32_t
         )
     );
 
     MOCK_CONST_METHOD1(
         OS_osSemaphoreRelease,
         osStatus(
-            osSemaphoreId semaphore_id
+            osSemaphoreId
+        )
+    );
+
+    MOCK_CONST_METHOD2(
+        OS_osSignalWait,
+        osEvent(
+            int32_t signals,
+            uint32_t millisec
+        )
+    );
+
+    MOCK_CONST_METHOD2(
+        OS_osSignalSet,
+        int32_t(
+            osThreadId thread_id,
+            int32_t signals
         )
     );
 };
