@@ -10,7 +10,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * Copyright (c) 2018 STMicroelectronics International N.V. 
+  * Copyright (c) 2019 STMicroelectronics International N.V. 
   * All rights reserved.
   *
   * Redistribution and use in source and binary forms, with or without 
@@ -55,6 +55,13 @@
 #include "lwip/netif.h"
 #include "cmsis_os.h"
 
+/* Exported types ------------------------------------------------------------*/
+/* Structure that include link thread parameters */
+struct link_str {
+  struct netif *netif;
+  osSemaphoreId semaphore;
+};
+
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
 
@@ -64,6 +71,7 @@
 err_t ethernetif_init(struct netif *netif);
 
 void ethernetif_input( void const * argument );
+void ethernetif_set_link(void const *argument);
 void ethernetif_update_config(struct netif *netif);
 void ethernetif_notify_conn_changed(struct netif *netif);
 

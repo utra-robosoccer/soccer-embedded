@@ -5,7 +5,7 @@
 #Valid Targets
 F4:=F4
 F7:=F7
-  
+
 #User options
 TARGET ?=$(F4)
 
@@ -23,15 +23,23 @@ MCU_UNIQUE_SRC_SUBDIRS := \
 Src/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \
 Drivers/STM32F4xx_HAL_Driver/Src \
 Src/F4 \
-startup/F4 
+startup/F4
 else ifeq ($(TARGET),$(F7))
 MCU_UNIQUE_SRC_SUBDIRS := \
 Src/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1 \
 Src/Middlewares/Third_Party/LwIP/src/* \
+Src/Middlewares/Third_Party/LwIP/src/api/* \
+Src/Middlewares/Third_Party/LwIP/src/apps/* \
+Src/Middlewares/Third_Party/LwIP/src/apps/mqtt/* \
+Src/Middlewares/Third_Party/LwIP/src/core/* \
+Src/Middlewares/Third_Party/LwIP/src/netif/* \
+Src/Middlewares/Third_Party/LwIP/src/core/netif/ppp/* \
 Src/Middlewares/Third_Party/LwIP/system/* \
+Src/Middlewares/Third_Party/LwIP/system/arch/* \
+Src/Middlewares/Third_Party/LwIP/system/OS/* \
 Drivers/STM32F7xx_HAL_Driver/Src  \
 Src/F7 \
-startup/F7 
+startup/F7
 else
 $(error MCU_UNIQUE_SRC_SUBDIRS not configured for target $(TARGET))
 endif
@@ -81,7 +89,16 @@ MCU_UNIQUE_INC :=\
 -I"$(PROJECT_DIR)/Drivers/CMSIS/Device/ST/STM32F7xx/Include" \
 -I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1" \
 -I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include" \
--I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/system"
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/system" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/lwip" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/lwip/apps" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/lwip/priv" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/lwip/prot" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/netif" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/netif/ppp" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/posix" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/src/include/posix/sys" \
+-I"$(PROJECT_DIR)/Src/Middlewares/Third_Party/LwIP/system/arch"
 else
 $(error MCU_UNIQUE_INC not configured for target $(TARGET))
 endif
@@ -114,7 +131,7 @@ CPP_TEST_SRCS := $(wildcard $(addsuffix /*Test.cpp,$(TEST_SUBDIR)))
 CPP_TEST_INC_SRCS := $(filter-out $(EXCL_SRCS),$(wildcard $(patsubst %Test.cpp,%.cpp,$(CPP_TEST_SRCS))))
 CPP_TEST_OBJECTS := $(addprefix $(BUILD_DIR)/$(TARGET)/Test/,$(patsubst $(COMMON_DIR)/%,%,$(CPP_TEST_SRCS:.cpp=.o)))
 CPP_TEST_OBJECTS += $(addprefix $(BUILD_DIR)/$(TARGET)/Test/,$(patsubst $(COMMON_DIR)/%,%,$(CPP_TEST_INC_SRCS:.cpp=.o)))
-CPP_TEST_OBJECTS += $(REPO_DIR)/gmock/src/Test.o 
+CPP_TEST_OBJECTS += $(REPO_DIR)/gmock/src/Test.o
 
 # Define compiler flags
 ifeq ($(TARGET),$(F4))
@@ -140,29 +157,29 @@ $(TARGET_BUILD_DIR)/%.o: %.c
 	arm-none-eabi-gcc $(CFLAGS) $(INC)  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
-	
+
 $(TARGET_BUILD_DIR)/%.o: %.cpp
 	@echo 'MCU G++ Compiler: Building file: $<'
 	@mkdir -p $(TARGET_BUILD_DIR)/$(patsubst /%.cpp,,$*)
 	arm-none-eabi-g++ $(CFLAGS) $(INC) -c -fno-exceptions -fno-rtti -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
-	@echo ' '	
-	
+	@echo ' '
+
 $(TARGET_BUILD_DIR)/%.o: $(COMMON_DIR)/%.c
 	@echo 'MCU GCC Compiler: Building file: $<'
 	@mkdir -p $(TARGET_BUILD_DIR)/$(patsubst /%.c,,$*)
 	arm-none-eabi-gcc $(CFLAGS) $(INC)  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
-	
+
 $(TARGET_BUILD_DIR)/%.o: $(COMMON_DIR)/%.cpp
 	@echo 'MCU G++ Compiler: Building file: $<'
 	@mkdir -p $(TARGET_BUILD_DIR)/$(patsubst /%.cpp,,$*)
 	arm-none-eabi-g++ $(CFLAGS) $(INC) -c -fno-exceptions -fno-rtti -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
-	@echo ' '	
+	@echo ' '
 
-# Note: The .s recipe only includes Common/include	
+# Note: The .s recipe only includes Common/include
 $(TARGET_BUILD_DIR)/%.o: %.s
 	@echo 'Building file: $<'
 	@echo 'Invoking: MCU GCC Assembler'
@@ -177,14 +194,14 @@ $(TARGET_BUILD_DIR)/Test/%.o: %.cpp
 	g++ $(MCU_DSTM) $(TEST_INC) $(INC) -fpermissive -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
-	
+
 $(TARGET_BUILD_DIR)/Test/%.o: $(COMMON_DIR)/%.cpp
 	@echo 'GCC C++ Compiler: Building file: $<'
 	@mkdir -p $(@D)
 	g++ $(MCU_DSTM) $(TEST_INC) $(INC) -fpermissive -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
-	@echo ' '	
-	
+	@echo ' '
+
 
 # Define libraries
 ifeq ($(TARGET),$(F4))
@@ -195,11 +212,11 @@ else
 $(error LIBS not configured for target $(TARGET))
 endif
 
-TEST_LIBS := -L"$(REPO_DIR)/googletest/build/googlemock" -L"$(REPO_DIR)/googletest/build/googlemock/gtest" 
+TEST_LIBS := -L"$(REPO_DIR)/googletest/build/googlemock" -L"$(REPO_DIR)/googletest/build/googlemock/gtest"
 
 # All Target
 ifndef CI
-all: $(BUILD_DIR)/$(TARGET)/Robot_$(TARGET).elf $(BUILD_DIR)/$(TARGET)/Test/RobotTest.exe 
+all: $(BUILD_DIR)/$(TARGET)/Robot_$(TARGET).elf $(BUILD_DIR)/$(TARGET)/Test/RobotTest.exe
 else
 all: $(BUILD_DIR)/$(TARGET)/Robot_$(TARGET).elf
 endif
@@ -214,7 +231,7 @@ $(BUILD_DIR)/F4/Robot_F4.elf: $(C_OBJECTS) $(CPP_OBJECTS) $(S_OBJECTS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
-	
+
 $(BUILD_DIR)/F7/Robot_F7.elf: $(C_OBJECTS) $(CPP_OBJECTS) $(S_OBJECTS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU G++ Linker'
@@ -222,7 +239,7 @@ $(BUILD_DIR)/F7/Robot_F7.elf: $(C_OBJECTS) $(CPP_OBJECTS) $(S_OBJECTS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
-	
+
 $(BUILD_DIR)/$(TARGET)/Test/RobotTest.exe: $(CPP_TEST_OBJECTS)
 	$(info $(CPP_TEST_SRCS))
 	$(info $(CPP_TEST_INC_SRCS))
@@ -232,7 +249,7 @@ $(BUILD_DIR)/$(TARGET)/Test/RobotTest.exe: $(CPP_TEST_OBJECTS)
 	g++ $(TEST_LIBS) -o "$(BUILD_DIR)/$(TARGET)/Test/RobotTest.exe" $(CPP_TEST_OBJECTS) $(TEST_FLAGS)
 	@echo 'Finished building target: $@'
 	@echo ' '
-	./$(BUILD_DIR)/$(TARGET)/Test/RobotTest.exe 
+	./$(BUILD_DIR)/$(TARGET)/Test/RobotTest.exe
 
 # Other Targets
 clean:

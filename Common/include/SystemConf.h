@@ -114,6 +114,10 @@ extern UART_HandleTypeDef huart6;
 #define USE_I2C_SILICON_BUG_FIX
 #endif
 
+#if defined(STM32F767xx)
+#define USE_ETHERNET
+#endif
+
 /**
  * @}
  */

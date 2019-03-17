@@ -50,6 +50,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "cmsis_os.h"
+#include "main.h"
 
 /* USER CODE BEGIN Includes */
 /**
@@ -79,6 +80,11 @@
 #include "OsInterfaceImpl.h"
 #include "CircularDmaBuffer/CircularDmaBuffer.h"
 #include "UartInterfaceImpl.h"
+// TODO(rfairley): USE_ETHERNET should be a compiler flag. Right now it
+// SystemConf.h needs to be included before lwip.h.
+#if defined(USE_ETHERNET)
+#include "lwip.h"
+#endif
 /* USER CODE END Includes */
 
 /* Variables -----------------------------------------------------------------*/
@@ -182,6 +188,7 @@ extern void StartMotorCmdGenTask(void const * argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* USER CODE BEGIN FunctionPrototypes */
+extern void MX_LWIP_Init(void);
 // For vApplicationGetIdleTaskMemory
 #ifdef __cplusplus
 extern "C" {
@@ -366,6 +373,11 @@ void StartDefaultTask(void const * argument)
   */
 void StartCommandTask(void const * argument)
 {
+    /* init code for LWIP */
+#if defined(USE_ETHERNET)
+    MX_LWIP_Init();
+#endif
+
     // Wait for the motors to turn on
     osDelay(osKernelSysTickMicroSec(100000));
 
