@@ -51,7 +51,7 @@ public:
     /* User-facing - typically call directly. */
     bool initialize();
     bool setupReceive(udp_recv_fn recv_callback);
-    bool receive(uint8_t *rx_array_out, const size_t num_bytes);
+    u16_t receive(uint8_t *rx_array_out, const size_t num_bytes);
     bool transmit(const uint8_t *tx_array_in, const size_t num_bytes);
 
     /* Utility - public but typically no need to call directly. */
@@ -65,13 +65,16 @@ public:
             const size_t num_bytes,
             struct pbuf *p_pbuf
     ) const;
-    void signalReceiveCplt();
-    void waitReceiveCplt();
-    void forgetPcb();
-    void forgetRecvPbuf();
+    bool signalReceiveCplt();
+    bool waitReceiveCplt();
+    bool forgetPcb();
+    bool forgetRecvPbuf();
 
     /* Accessors - public but typically no need to call directly. */
-    void setRecvPbuf(struct pbuf *p_pbuf);
+    void setIsInitialized(const bool is_initialized);
+    bool setRecvPbuf(const struct pbuf *p_pbuf);
+
+    bool getIsInitialized() const;
     const ip_addr_t getIpAddrSrc() const;
     const ip_addr_t getIpAddrDest() const;
     const u16_t getPortSrc() const;
@@ -82,9 +85,12 @@ public:
     struct pbuf* getRecvPbuf() const;
 
 private:
+    /* State indicator. */
+    bool m_is_initialized = false;
+
     /* UdpDriver configuration. */
-    const ip_addr_t m_ip_addr_src = {0x0};
-    const ip_addr_t m_ip_addr_dest = {0x0};
+    ip_addr_t m_ip_addr_src = {0x0};
+    ip_addr_t m_ip_addr_dest = {0x0};
     const u16_t m_port_src = 0;
     const u16_t m_port_dest = 0;
 

@@ -77,6 +77,8 @@
 #include "rx_helper.h"
 #include "tx_helper.h"
 #include "UartDriver/UartDriver.h"
+#include "UdpDriver/UdpDriver.h"
+#include "UdpRawInterfaceImpl.h"
 #include "OsInterfaceImpl.h"
 #include "CircularDmaBuffer/CircularDmaBuffer.h"
 #include "UartInterfaceImpl.h"
@@ -84,6 +86,8 @@
 // SystemConf.h needs to be included before lwip.h.
 #if defined(USE_ETHERNET)
 #include "lwip.h"
+#include "ip4_addr.h"
+#include "ip_addr.h"
 #endif
 /* USER CODE END Includes */
 
@@ -110,13 +114,13 @@ osThreadId IMUTaskHandle;
 uint32_t IMUTaskBuffer[ 128 ];
 osStaticThreadDef_t IMUTaskControlBlock;
 osThreadId CommandTaskHandle;
-uint32_t CommandTaskBuffer[ 128 ];
+uint32_t CommandTaskBuffer[ 640 ];
 osStaticThreadDef_t CommandTaskControlBlock;
 osThreadId RxTaskHandle;
-uint32_t RxTaskBuffer[ 512 ];
+uint32_t RxTaskBuffer[ 640 ];
 osStaticThreadDef_t RxTaskControlBlock;
 osThreadId TxTaskHandle;
-uint32_t TxTaskBuffer[ 512 ];
+uint32_t TxTaskBuffer[ 640 ];
 osStaticThreadDef_t TxTaskControlBlock;
 osThreadId BuffWriterTaskHandle;
 uint32_t BuffWriterTaskBuffer[ 128 ];
@@ -159,6 +163,55 @@ buffer::BufferMaster buffer_master;
 cmsis::OsInterfaceImpl os_if_impl;
 hal::UartInterfaceImpl uart_if;
 uart::UartDriver pc_uart_driver(&os_if_impl, &uart_if, UART_HANDLE_PC);
+#if defined(USE_ETHERNET)
+using lwip::UdpRawInterfaceImpl;
+using udp::UdpDriver;
+UdpRawInterfaceImpl udp_if;
+const uint32_t recv_signal = 0x00005000;
+const ip_addr_t ip_addr_mcu = {(((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((59) & 0xff))) & 0x000000ffUL) << 24) | \
+((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((59) & 0xff))) & 0x0000ff00UL) <<  8) | \
+((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((59) & 0xff))) & 0x00ff0000UL) >>  8) | \
+((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((59) & 0xff))) & 0xff000000UL) >> 24))};
+// IP address of 0 means "any"
+const ip_addr_t ip_addr_pc = {(((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((2) & 0xff))) & 0x000000ffUL) << 24) | \
+((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((2) & 0xff))) & 0x0000ff00UL) <<  8) | \
+((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((2) & 0xff))) & 0x00ff0000UL) >>  8) | \
+((((((u32_t)((192) & 0xff) << 24) | \
+        ((u32_t)((168) & 0xff) << 16) | \
+        ((u32_t)((0) & 0xff) << 8)  | \
+         (u32_t)((2) & 0xff))) & 0xff000000UL) >> 24))};
+UdpDriver udp_driver(
+    (ip_addr_t) ip_addr_mcu,
+    (ip_addr_t) ip_addr_pc,
+    (u16_t) 7,
+    (u16_t) 7,
+    &udp_if,
+    &os_if_impl,
+    (uint32_t) recv_signal,
+    RxTaskHandle
+);
+#endif
 
 bool setup_is_done = false;
 static volatile uint32_t error;
@@ -285,15 +338,15 @@ void MX_FREERTOS_Init(void) {
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
 
   /* definition and creation of CommandTask */
-  osThreadStaticDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 128, CommandTaskBuffer, &CommandTaskControlBlock);
+  osThreadStaticDef(CommandTask, StartCommandTask, osPriorityAboveNormal, 0, 640, CommandTaskBuffer, &CommandTaskControlBlock);
   CommandTaskHandle = osThreadCreate(osThread(CommandTask), NULL);
 
   /* definition and creation of RxTask */
-  osThreadStaticDef(RxTask, StartRxTask, osPriorityRealtime, 0, 512, RxTaskBuffer, &RxTaskControlBlock);
+  osThreadStaticDef(RxTask, StartRxTask, osPriorityRealtime, 0, 640, RxTaskBuffer, &RxTaskControlBlock);
   RxTaskHandle = osThreadCreate(osThread(RxTask), NULL);
 
   /* definition and creation of TxTask */
-  osThreadStaticDef(TxTask, StartTxTask, osPriorityHigh, 0, 512, TxTaskBuffer, &TxTaskControlBlock);
+  osThreadStaticDef(TxTask, StartTxTask, osPriorityHigh, 0, 640, TxTaskBuffer, &TxTaskControlBlock);
   TxTaskHandle = osThreadCreate(osThread(TxTask), NULL);
 
   /* definition and creation of BuffWriterTask */
@@ -376,6 +429,10 @@ void StartCommandTask(void const * argument)
     /* init code for LWIP */
 #if defined(USE_ETHERNET)
     MX_LWIP_Init();
+    if (!udp_driver.initialize())
+    {
+        // TODO(rfairley): report error here, e.g. blink LED
+    }
 #endif
 
     // Wait for the motors to turn on
@@ -695,6 +752,33 @@ void StartRxTask(void const * argument) {
     bool parse_out = 0;
     uint8_t raw[RX_BUFF_SIZE];
     uint8_t processing_buff[RX_BUFF_SIZE];
+
+#if defined(USE_ETHERNET)
+    if (!udp_driver.getIsInitialized())
+    {
+        // TODO(rfairley): report error here e.g. blink LED
+    }
+    if (!udp_driver.setupReceive(nullptr))
+    {
+        // TODO(rfairley): report error here e.g. blink LED
+    }
+    for (;;)
+    {
+        osDelayUntil(&last_wake_time, RX_CYCLE_TIME);
+
+        u16_t num_bytes_received = udp_driver.receive(raw, RX_BUFF_SIZE);
+        parseByteSequence(processing_buff, num_bytes_received, parse_out);
+
+        if (parse_out) {
+            parse_out = false;
+
+            copyParsedData();
+
+            osSignalSet(TxTaskHandle, NOTIFIED_FROM_TASK);
+            osSignalSet(CommandTaskHandle, NOTIFIED_FROM_TASK);
+        }
+    }
+#else
     uart::CircularDmaBuffer rx_buffer = uart::CircularDmaBuffer(
         UART_HANDLE_PC,
         &uart_if,
@@ -725,6 +809,7 @@ void StartRxTask(void const * argument) {
             osSignalSet(CommandTaskHandle, NOTIFIED_FROM_TASK);
         }
     }
+#endif
 }
 
 /**
@@ -749,10 +834,19 @@ void StartTxTask(void const * argument) {
         osSignalWait(0, osWaitForever);
 
         copySensorDataToSend(&buffer_master);
+        comm::RobotState_t& robot_state = comm::getRobotState();
 
+#if defined(USE_ETHERNET)
+        if (!udp_driver.transmit(
+                reinterpret_cast<uint8_t*>(&robot_state),
+                sizeof(comm::RobotState_t)
+        ))
+        {
+            // TODO(rfairley): report error here e.g. blink LED
+        }
+#else
         // TODO: should have a way to back out of a failed transmit and reinitiate
         // (e.g. timeout), number of attempts, ..., rather than infinitely loop.
-        comm::RobotState_t& robot_state = comm::getRobotState();
         while(!pc_uart_driver.transmit(
                 reinterpret_cast<uint8_t*>(&robot_state),
                 sizeof(comm::RobotState_t)
@@ -761,6 +855,7 @@ void StartTxTask(void const * argument) {
         {
             continue;
         }
+#endif
     }
 }
 

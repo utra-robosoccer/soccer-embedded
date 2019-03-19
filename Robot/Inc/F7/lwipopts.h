@@ -77,6 +77,8 @@
 
 /* LwIP Stack Parameters (modified compared to initialization value in opt.h) -*/
 /* Parameters set in STM32CubeMX LwIP Configuration GUI -*/
+/*----- Default Value for LWIP_ICMP: 1 ---*/
+#define LWIP_ICMP 0
 /*----- Default Value for MEMP_NUM_UDP_PCB: 4 ---*/
 #define MEMP_NUM_UDP_PCB 1
 /*----- Value in opt.h for LWIP_TCP: 1 -----*/
@@ -88,17 +90,31 @@
 /*----- Default Value for MEM_SIZE: 1600 ---*/
 #define MEM_SIZE 10240
 /*----- Default Value for MEMP_NUM_PBUF: 16 ---*/
-#define MEMP_NUM_PBUF 10
+#define MEMP_NUM_PBUF 0
+/*----- Default Value for MEMP_NUM_RAW_PCB: 4 ---*/
+#define MEMP_NUM_RAW_PCB 1
 /*----- Default Value for MEMP_NUM_TCP_PCB_LISTEN: 8 ---*/
 #define MEMP_NUM_TCP_PCB_LISTEN 0
 /*----- Default Value for MEMP_NUM_TCP_SEG: 16 ---*/
 #define MEMP_NUM_TCP_SEG 0
+/*----- Default Value for MEMP_NUM_IGMP_GROUP: 8 ---*/
+#define MEMP_NUM_IGMP_GROUP 0
+/*----- Default Value for MEMP_NUM_SYS_TIMEOUT: 1 ---*/
+#define MEMP_NUM_SYS_TIMEOUT 10
+/*----- Default Value for MEMP_NUM_NETBUF: 2 ---*/
+#define MEMP_NUM_NETBUF 0
+/*----- Default Value for MEMP_NUM_NETCONN: 4 ---*/
+#define MEMP_NUM_NETCONN 0
 /*----- Default Value for PBUF_POOL_SIZE: 16 ---*/
 #define PBUF_POOL_SIZE 11
 /*----- Default Value for PBUF_POOL_BUFSIZE: 592 ---*/
 #define PBUF_POOL_BUFSIZE 1524
 /*----- Value in opt.h for LWIP_ETHERNET: LWIP_ARP || PPPOE_SUPPORT -*/
 #define LWIP_ETHERNET 1
+/*----- Default Value for IP_REASSEMBLY: 1 ---*/
+#define IP_REASSEMBLY 0
+/*----- Default Value for IP_FRAG: 1 ---*/
+#define IP_FRAG 0
 /*----- Default Value for LWIP_RAW: 0 ---*/
 #define LWIP_RAW 1
 /*----- Value in opt.h for LWIP_DNS_SECURE: (LWIP_DNS_SECURE_RAND_XID | LWIP_DNS_SECURE_NO_MULTIPLE_OUTSTANDING | LWIP_DNS_SECURE_RAND_SRC_PORT) -*/

@@ -33,7 +33,6 @@ using hal::GpioInterfaceImpl;
 
 
 
-
 /********************************** periph ***********************************/
 namespace periph{
 // Variables

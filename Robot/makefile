@@ -39,7 +39,8 @@ Src/Middlewares/Third_Party/LwIP/system/arch/* \
 Src/Middlewares/Third_Party/LwIP/system/OS/* \
 Drivers/STM32F7xx_HAL_Driver/Src  \
 Src/F7 \
-startup/F7
+startup/F7 \
+$(COMMON_DIR)/component/UdpDriver
 else
 $(error MCU_UNIQUE_SRC_SUBDIRS not configured for target $(TARGET))
 endif
