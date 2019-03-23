@@ -45,15 +45,21 @@
 
 /* USER CODE BEGIN Includes */
 #include "Dynamixel_Data.h"
-#include "AX12A.h"
-#include "MX28.h"
+//#include "AX12A.h"
+//#include "MX28.h"
 #include "Dynamixel_Types.h"
-#include "DynamixelProtocolV1_IO.h"
-#include "DynamixelProtocolV1.h"
+//#include "DynamixelProtocolV1_IO.h"
+//#include "DynamixelProtocolV1.h"
 
 //new includes
-#include "GpioInterface.h"
-#include "UartInterface.h"
+#include "GpioInterfaceImpl.h"
+#include "UartInterfaceImpl.h"
+#include "UartDriver/UartDriver.h"
+#include "DaisyChain/DaisyChain.h"
+#include "Dynamixel/AX12A.h"
+#include "Dynamixel/MX28.h"
+//#include "Dynamixel/Dynamixel.h"
+
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -575,15 +581,41 @@ double extractAngle(uint8_t rx_buf){
 
 void joint_horizontal_control(double angle, uint8_t joint_id){ //joint_id = 10
 	//MX_USART2_UART_Init();
-	Dynamixel_Init(&motorAX_hor, joint_id, &huart2, Motor_GPIO_Port,
-				Motor1_Pin, AX12ATYPE);
-	Dynamixel_SetGoalPosition(&motorAX_hor, angle);
+	//Dynamixel_Init(&motorAX_hor, joint_id, &huart2, Motor_GPIO_Port, Motor1_Pin, AX12ATYPE);
+	//Dynamixel_SetGoalPosition(&motorAX_hor, angle);
+
+	/* UART Interface & Driver */
+	hal::UartInterfaceImpl hw_if_hor;
+	uart::UartDriver uart_dr_hor = uart::UartDriver(&hw_if_hor, &huart2);
+	/* GPIO Interface */
+	hal::GpioInterfaceImpl gpio_if_hor;
+	/* DaisyChain */
+	dynamixel::DaisyChainParams daisy_params_hor{ &uart_dr_hor, &gpio_if_hor, Motor_GPIO_Port, Motor1_Pin };
+	dynamixel::DaisyChain daisy_ch_hor = dynamixel::DaisyChain(daisy_params_hor);
+	/* AX12 Motor Class*/
+	dynamixel::AX12A motorAX_hor = dynamixel::AX12A(joint_id, &daisy_ch_hor);
+
+	// Calls DataWroter with &motorAX_hor (hdynamixel), and calculated high/low byte
+	motorAX_hor.setGoalPosition(angle);
 }
 
 void joint_vertical_control(double angle, uint8_t joint_id){ //joint_id = 16
-    Dynamixel_Init(&motorAX_vert, joint_id, &huart2, Motor_GPIO_Port,
-                    Motor2_Pin, AX12ATYPE);
-    Dynamixel_SetGoalPosition(&motorAX_vert, angle);
+    //Dynamixel_Init(&motorAX_vert, joint_id, &huart2, Motor_GPIO_Port, Motor2_Pin, AX12ATYPE);
+	//Dynamixel_SetGoalPosition(&motorAX_vert, angle);
+
+	/* UART Interface & Driver */
+	hal::UartInterfaceImpl hw_if_ver;
+	uart::UartDriver uart_dr_ver = uart::UartDriver(&hw_if_ver, &huart2);
+	/* GPIO Interface */
+	hal::GpioInterfaceImpl gpio_if_ver;
+	/* DaisyChain */
+	dynamixel::DaisyChainParams daisy_params_ver{ &uart_dr_ver, &gpio_if_ver, Motor_GPIO_Port, Motor1_Pin };
+	dynamixel::DaisyChain daisy_ch_ver = dynamixel::DaisyChain(daisy_params_ver);
+	/* AX12 Motor Class*/
+	dynamixel::AX12A motorAX_ver = dynamixel::AX12A(joint_id, &daisy_ch_ver);
+
+	// Calls DataWroter with &motorAX_hor (hdynamixel), and calculated high/low byte
+	motorAX_ver.setGoalPosition(angle);
 }
 
 //int get_pwm_speed(uint8_t speed){
