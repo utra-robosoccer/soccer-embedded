@@ -44,18 +44,13 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-#include "Dynamixel_Data.h"
-//#include "AX12A.h"
-//#include "MX28.h"
-#include "Dynamixel_Types.h"
-//#include "DynamixelProtocolV1_IO.h"
-//#include "DynamixelProtocolV1.h"
-
-//new includes
 #include "GpioInterfaceImpl.h"
 #include "UartInterfaceImpl.h"
+
 #include "UartDriver/UartDriver.h"
 #include "DaisyChain/DaisyChain.h"
+
+#include "Dynamixel/Dynamixel.h"
 #include "Dynamixel/AX12A.h"
 #include "Dynamixel/MX28.h"
 //#include "Dynamixel/Dynamixel.h"
@@ -68,14 +63,11 @@
 #define		WHEEL_DIAMETER   0.1
 #define		SPEED 			 1 //rps
 
-
-
 enum motor_direction {
     MOTOR_STOP = 0, MOTOR_CLOCKWISE = 1, MOTOR_COUNTERCLOCKWISE = 2
 };
 
 uint8_t rx_buf[3];
-//rx_buf2 = 0, rx_buf3 = 0;
 
 uint8_t x_case = 0; //0-stop, 1-0.1m/s, 2-0.2m/s, 3-0.3m/s
 uint8_t y_case = 0;
@@ -102,6 +94,7 @@ uint8_t joint1_id = 10;
 uint8_t joint2_id = 16;
 
 HAL_StatusTypeDef status_b1, status_b2, status_b3;
+
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE END PV */
 
@@ -129,13 +122,11 @@ void setMotor4Dir();
 
 void move_to_pos();
 
-
-Dynamixel_HandleTypeDef motorAX_hor;
-Dynamixel_HandleTypeDef motorAX_vert;
-
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+hal::UartInterfaceImpl uart_if;
+hal::GpioInterfaceImpl gpio_if;
 /* USER CODE END 0 */
 
 /**
@@ -155,7 +146,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -180,7 +170,8 @@ int main(void)
 
         /* 1. Loop actuates all motors while waiting for commands */
         do {
-            status_b1 = HAL_UART_Receive(&huart2, rx_buf, 3*sizeof(uint8_t), 10);
+            status_b1 = uart_if.receivePoll(&huart2, rx_buf, 3*sizeof(uint8_t), 10);
+            //HAL_UART_Receive(&huart2, rx_buf, 3*sizeof(uint8_t), 10);
             // set directions
             setMotor1Dir();
             setMotor2Dir();
@@ -218,7 +209,6 @@ int main(void)
         move_to_pos();
 
         /* 4. Extract bytes for camera control motors*/
-
         MX_USART2_UART_Init_X(1000000);
         joint1_angle = extractAngle(rx_buf[1]);
         joint_horizontal_control(joint1_angle, joint1_id);
@@ -479,16 +469,22 @@ void move_to_pos() {
 void setMotor1Dir() {
     switch (motor1_dir) {
     case MOTOR_CLOCKWISE:
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
         break;
     case MOTOR_COUNTERCLOCKWISE:
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
         break;
     case MOTOR_STOP:
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET);
+       	gpio_if.writePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
         break;
     default:
         break;
@@ -498,16 +494,22 @@ void setMotor1Dir() {
 void setMotor2Dir() {
     switch (motor2_dir) {
     case MOTOR_CLOCKWISE:
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
         break;
     case MOTOR_COUNTERCLOCKWISE:
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
         break;
     case MOTOR_STOP:
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
         break;
     default:
         break;
@@ -517,32 +519,44 @@ void setMotor2Dir() {
 void setMotor3Dir() {
     switch (motor3_dir) {
     case MOTOR_CLOCKWISE:
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
         break;
     case MOTOR_COUNTERCLOCKWISE:
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
         break;
     case MOTOR_STOP:
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+        gpio_if.writePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
     }
 }
 
 void setMotor4Dir() {
     switch (motor4_dir) {
     case MOTOR_CLOCKWISE:
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
         break;
     case MOTOR_COUNTERCLOCKWISE:
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET);
         break;
     case MOTOR_STOP:
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+        //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET);
+    	gpio_if.writePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
         break;
     default:
         break;
@@ -584,13 +598,10 @@ void joint_horizontal_control(double angle, uint8_t joint_id){ //joint_id = 10
 	//Dynamixel_Init(&motorAX_hor, joint_id, &huart2, Motor_GPIO_Port, Motor1_Pin, AX12ATYPE);
 	//Dynamixel_SetGoalPosition(&motorAX_hor, angle);
 
-	/* UART Interface & Driver */
-	hal::UartInterfaceImpl hw_if_hor;
-	uart::UartDriver uart_dr_hor = uart::UartDriver(&hw_if_hor, &huart2);
-	/* GPIO Interface */
-	hal::GpioInterfaceImpl gpio_if_hor;
+	/* UART Driver */
+	uart::UartDriver uart_dr_hor = uart::UartDriver(&uart_if, &huart2);
 	/* DaisyChain */
-	dynamixel::DaisyChainParams daisy_params_hor{ &uart_dr_hor, &gpio_if_hor, Motor_GPIO_Port, Motor1_Pin };
+	dynamixel::DaisyChainParams daisy_params_hor{ &uart_dr_hor, &gpio_if, Motor_GPIO_Port, Motor1_Pin };
 	dynamixel::DaisyChain daisy_ch_hor = dynamixel::DaisyChain(daisy_params_hor);
 	/* AX12 Motor Class*/
 	dynamixel::AX12A motorAX_hor = dynamixel::AX12A(joint_id, &daisy_ch_hor);
@@ -604,12 +615,9 @@ void joint_vertical_control(double angle, uint8_t joint_id){ //joint_id = 16
 	//Dynamixel_SetGoalPosition(&motorAX_vert, angle);
 
 	/* UART Interface & Driver */
-	hal::UartInterfaceImpl hw_if_ver;
-	uart::UartDriver uart_dr_ver = uart::UartDriver(&hw_if_ver, &huart2);
-	/* GPIO Interface */
-	hal::GpioInterfaceImpl gpio_if_ver;
+	uart::UartDriver uart_dr_ver = uart::UartDriver(&uart_if, &huart2);
 	/* DaisyChain */
-	dynamixel::DaisyChainParams daisy_params_ver{ &uart_dr_ver, &gpio_if_ver, Motor_GPIO_Port, Motor1_Pin };
+	dynamixel::DaisyChainParams daisy_params_ver{ &uart_dr_ver, &gpio_if, Motor_GPIO_Port, Motor2_Pin };
 	dynamixel::DaisyChain daisy_ch_ver = dynamixel::DaisyChain(daisy_params_ver);
 	/* AX12 Motor Class*/
 	dynamixel::AX12A motorAX_ver = dynamixel::AX12A(joint_id, &daisy_ch_ver);
