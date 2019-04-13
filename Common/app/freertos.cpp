@@ -51,6 +51,7 @@
 #include "task.h"
 #include "cmsis_os.h"
 #include "main.h"
+#include "gpio.h"
 
 /* USER CODE BEGIN Includes */
 /**
@@ -86,14 +87,12 @@
 // SystemConf.h needs to be included before lwip.h.
 #if defined(USE_ETHERNET)
 #include "lwip.h"
-#include "ip4_addr.h"
-#include "ip_addr.h"
 #endif
 /* USER CODE END Includes */
 
 /* Variables -----------------------------------------------------------------*/
 osThreadId defaultTaskHandle;
-uint32_t defaultTaskBuffer[ 128 ];
+uint32_t defaultTaskBuffer[ 640 ];
 osStaticThreadDef_t defaultTaskControlBlock;
 osThreadId UpperLeftLegHandle;
 uint32_t UpperLeftLegBuffer[ 128 ];
@@ -167,49 +166,19 @@ uart::UartDriver pc_uart_driver(&os_if_impl, &uart_if, UART_HANDLE_PC);
 using lwip::UdpRawInterfaceImpl;
 using udp::UdpDriver;
 UdpRawInterfaceImpl udp_if;
-const uint32_t recv_signal = 0x00005000;
-const ip_addr_t ip_addr_mcu = {(((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((59) & 0xff))) & 0x000000ffUL) << 24) | \
-((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((59) & 0xff))) & 0x0000ff00UL) <<  8) | \
-((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((59) & 0xff))) & 0x00ff0000UL) >>  8) | \
-((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((59) & 0xff))) & 0xff000000UL) >> 24))};
+constexpr uint32_t recv_signal = 0x00005000;
+constexpr u32_t ip_addr_mcu_val = (u32_t)0x00000000UL;
 // IP address of 0 means "any"
-const ip_addr_t ip_addr_pc = {(((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((2) & 0xff))) & 0x000000ffUL) << 24) | \
-((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((2) & 0xff))) & 0x0000ff00UL) <<  8) | \
-((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((2) & 0xff))) & 0x00ff0000UL) >>  8) | \
-((((((u32_t)((192) & 0xff) << 24) | \
-        ((u32_t)((168) & 0xff) << 16) | \
-        ((u32_t)((0) & 0xff) << 8)  | \
-         (u32_t)((2) & 0xff))) & 0xff000000UL) >> 24))};
+constexpr u32_t ip_addr_pc_val = (u32_t)0x00000000UL;
 UdpDriver udp_driver(
-    (ip_addr_t) ip_addr_mcu,
-    (ip_addr_t) ip_addr_pc,
     (u16_t) 7,
     (u16_t) 7,
     &udp_if,
     &os_if_impl,
     (uint32_t) recv_signal,
-    RxTaskHandle
+    RxTaskHandle,
+    (u32_t) ip_addr_mcu_val,
+    (u32_t) ip_addr_pc_val
 );
 #endif
 
@@ -222,6 +191,9 @@ static volatile uint32_t error;
  * scheduling delays, so this is set to 5ms. */
 constexpr TickType_t TX_CYCLE_TIME_MS = 5;
 }
+
+extern struct netif gnetif;
+
 /* USER CODE END Variables */
 
 /* Function prototypes -------------------------------------------------------*/
@@ -310,7 +282,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityIdle, 0, 128, defaultTaskBuffer, &defaultTaskControlBlock);
+  osThreadStaticDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 640, defaultTaskBuffer, &defaultTaskControlBlock);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of UpperLeftLeg */
@@ -399,7 +371,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	osDelay(1);
+    ethernetif_input(&gnetif);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -432,6 +404,7 @@ void StartCommandTask(void const * argument)
     if (!udp_driver.initialize())
     {
         // TODO(rfairley): report error here, e.g. blink LED
+        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
     }
 #endif
 
@@ -757,10 +730,12 @@ void StartRxTask(void const * argument) {
     if (!udp_driver.getIsInitialized())
     {
         // TODO(rfairley): report error here e.g. blink LED
+        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
     }
     if (!udp_driver.setupReceive(nullptr))
     {
         // TODO(rfairley): report error here e.g. blink LED
+        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
     }
     for (;;)
     {
@@ -843,6 +818,7 @@ void StartTxTask(void const * argument) {
         ))
         {
             // TODO(rfairley): report error here e.g. blink LED
+            HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
         }
 #else
         // TODO: should have a way to back out of a failed transmit and reinitiate

@@ -38,14 +38,16 @@ constexpr TickType_t SEMAPHORE_WAIT_NUM_TICKS = pdMS_TO_TICKS(SEMAPHORE_WAIT_NUM
 class UdpDriver {
 public:
     UdpDriver();
-    UdpDriver(const ip_addr_t m_ip_addr_src,
-              const ip_addr_t m_ip_addr_dest,
-              const u16_t m_port_src,
-              const u16_t m_port_dest,
-              const UdpRawInterface *m_udp_if,
-              const OsInterface *m_os_if,
-              const uint32_t m_recv_signal,
-              const osThreadId m_recv_signal_task);
+    UdpDriver(
+        const u16_t m_port_src,
+        const u16_t m_port_dest,
+        const UdpRawInterface *m_udp_if,
+        const OsInterface *m_os_if,
+        const uint32_t m_recv_signal,
+        const osThreadId m_recv_signal_task,
+        const u32_t m_ip_addr_src_val,
+        const u32_t m_ip_addr_dest_val
+    );
     ~UdpDriver();
 
     /* User-facing - typically call directly. */
@@ -75,8 +77,8 @@ public:
     bool setRecvPbuf(const struct pbuf *p_pbuf);
 
     bool getIsInitialized() const;
-    const ip_addr_t getIpAddrSrc() const;
-    const ip_addr_t getIpAddrDest() const;
+    u32_t getIpAddrSrcVal() const;
+    u32_t getIpAddrDestVal() const;
     const u16_t getPortSrc() const;
     const u16_t getPortDest() const;
     const UdpRawInterface* getUdpIf() const;

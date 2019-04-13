@@ -39,7 +39,7 @@ static void defaultRecvCallback(void *arg,
 }
 
 static bool transmitImpl(UdpDriver* self, struct pbuf * p_pbuf) {
-    const ip_addr_t addr = self->getIpAddrDest();
+    const ip_addr_t addr = { (u32_t)self->getIpAddrDestVal() };
     bool success = false;
 
     if (self->getUdpIf()->udpConnect(
@@ -81,17 +81,15 @@ UdpDriver::UdpDriver()
 }
 
 UdpDriver::UdpDriver(
-    const ip_addr_t m_ip_addr_src_val,
-    const ip_addr_t m_ip_addr_dest_val,
     const u16_t m_port_src,
     const u16_t m_port_dest,
     const UdpRawInterface *m_udp_if,
     const OsInterface *m_os_if,
     const uint32_t m_recv_signal,
-    const osThreadId m_recv_signal_task
+    const osThreadId m_recv_signal_task,
+    const u32_t m_ip_addr_src_val,
+    const u32_t m_ip_addr_dest_val
 ) :
-    m_ip_addr_src(m_ip_addr_src),
-    m_ip_addr_dest(m_ip_addr_dest),
     m_port_src(m_port_src),
     m_port_dest(m_port_dest),
     m_udp_if(m_udp_if),
@@ -99,7 +97,8 @@ UdpDriver::UdpDriver(
     m_recv_signal(m_recv_signal),
     m_recv_signal_task(m_recv_signal_task)
 {
-
+    m_ip_addr_src.addr = m_ip_addr_src_val;
+    m_ip_addr_dest.addr = m_ip_addr_dest_val;
 }
 
 UdpDriver::~UdpDriver()
@@ -359,14 +358,14 @@ bool UdpDriver::setRecvPbuf(const struct pbuf *p_pbuf)
     return true;
 }
 
-const ip_addr_t UdpDriver::getIpAddrSrc() const
+u32_t UdpDriver::getIpAddrSrcVal() const
 {
-    return m_ip_addr_src;
+    return m_ip_addr_src.addr;
 }
 
-const ip_addr_t UdpDriver::getIpAddrDest() const
+u32_t UdpDriver::getIpAddrDestVal() const
 {
-    return m_ip_addr_dest;
+    return m_ip_addr_dest.addr;
 }
 
 const u16_t UdpDriver::getPortSrc() const

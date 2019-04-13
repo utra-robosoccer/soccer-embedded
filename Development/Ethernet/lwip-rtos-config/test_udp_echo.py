@@ -12,6 +12,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 server_address = ('192.168.0.59', 7)
 sock.bind(('', 7))
+sock.settimeout(2)
 
 message = 'this is a message of'.encode()
 
