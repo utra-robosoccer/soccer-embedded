@@ -709,7 +709,6 @@ void StartRxTask(void const * argument) {
 
             copyParsedData();
 
-            osSignalSet(TxTaskHandle, NOTIFIED_FROM_TASK);
             osSignalSet(CommandTaskHandle, NOTIFIED_FROM_TASK);
         }
     }
@@ -728,13 +727,14 @@ void StartRxTask(void const * argument) {
  * @ingroup Threads
  */
 void StartTxTask(void const * argument) {
-
     // TxTask waits for first time setup complete.
     osSignalWait(0, osWaitForever);
 
+    // For packet timing management
+    TickType_t last_wake_time = xTaskGetTickCount();
+    TickType_t TX_PERIOD_MS = 10;
     for (;;) {
-        // Wait until woken up by Rx ("read command event")
-        osSignalWait(0, osWaitForever);
+        vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(TX_PERIOD_MS));
 
         copySensorDataToSend(&buffer_master);
 
