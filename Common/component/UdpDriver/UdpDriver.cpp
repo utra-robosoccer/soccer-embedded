@@ -81,14 +81,14 @@ UdpDriver::UdpDriver()
 }
 
 UdpDriver::UdpDriver(
+    const u32_t m_ip_addr_src_val,
+    const u32_t m_ip_addr_dest_val,
     const u16_t m_port_src,
     const u16_t m_port_dest,
     const UdpRawInterface *m_udp_if,
     const OsInterface *m_os_if,
     const uint32_t m_recv_signal,
-    const osThreadId m_recv_signal_task,
-    const u32_t m_ip_addr_src_val,
-    const u32_t m_ip_addr_dest_val
+    const osThreadId m_recv_signal_task
 ) :
     m_port_src(m_port_src),
     m_port_dest(m_port_dest),
@@ -121,7 +121,7 @@ bool UdpDriver::initialize()
     osMutexStaticDef(UdpDriverRecvPbuf, &m_recv_pbuf_mutex_control_block);
     if ((m_recv_pbuf_mutex = getOsIf()->OS_osMutexCreate(
             osMutex(UdpDriverRecvPbuf)
-            )) == NULL)
+            )) == 0)
     {
         return false;
     }
@@ -151,10 +151,10 @@ bool UdpDriver::setupReceive(udp_recv_fn recv_callback)
     {
         return false;
     }
-
+    ip_addr_t ip_addr_any = {((u32_t)0x00000000UL)};
     success = (getUdpIf()->udpBind(
             const_cast<struct udp_pcb *>(getPcb()),
-            &m_ip_addr_src,
+            &ip_addr_any,
             getPortSrc()
     ) == ERR_OK);
 

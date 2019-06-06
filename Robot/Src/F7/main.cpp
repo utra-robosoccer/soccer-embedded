@@ -50,12 +50,10 @@
 #include "main.h"
 #include "stm32f7xx_hal.h"
 #include "cmsis_os.h"
-#include "dma.h"
-#include "i2c.h"
-#include "usart.h"
-#include "gpio.h"
 #include "lwip.h"
-#include "tim.h"
+#include "usart.h"
+#include "usb_otg.h"
+#include "gpio.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -70,11 +68,10 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MPU_Config(void);
 void MX_FREERTOS_Init(void);
 
 /* USER CODE BEGIN PFP */
-static void MPU_Config(void);
-
 /* Private function prototypes -----------------------------------------------*/
 
 /* USER CODE END PFP */
@@ -92,16 +89,16 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 
-    /* MPU Configuration----------------------------------------------------------*/
-    MPU_Config();
-
-    /* Enable I-Cache-------------------------------------------------------------*/
-    SCB_EnableICache();
-
-    /* Enable D-Cache-------------------------------------------------------------*/
-    SCB_EnableDCache();
-
   /* USER CODE END 1 */
+
+  /* MPU Configuration----------------------------------------------------------*/
+  MPU_Config();
+
+  /* Enable I-Cache-------------------------------------------------------------*/
+  SCB_EnableICache();
+
+  /* Enable D-Cache-------------------------------------------------------------*/
+  SCB_EnableDCache();
 
   /* MCU Configuration----------------------------------------------------------*/
 
@@ -121,15 +118,8 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_USART3_UART_Init();
-  MX_UART4_Init();
-  MX_UART5_Init();
-  MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
-  MX_USART6_UART_Init();
-  MX_I2C1_Init();
-  MX_TIM2_Init();
+  MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -209,17 +199,9 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2
-                              |RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USART6
-                              |RCC_PERIPHCLK_UART4|RCC_PERIPHCLK_UART5
-                              |RCC_PERIPHCLK_I2C1;
-  PeriphClkInitStruct.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_CLK48;
   PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.Uart4ClockSelection = RCC_UART4CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.Uart5ClockSelection = RCC_UART5CLKSOURCE_PCLK1;
-  PeriphClkInitStruct.Usart6ClockSelection = RCC_USART6CLKSOURCE_PCLK2;
-  PeriphClkInitStruct.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLL;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -238,6 +220,8 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/* USER CODE END 4 */
 
 /* MPU Configuration */
 
@@ -299,9 +283,6 @@ void MPU_Config(void)
   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 
 }
-
-/* USER CODE END 4 */
-
 /**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM1 interrupt took place, inside

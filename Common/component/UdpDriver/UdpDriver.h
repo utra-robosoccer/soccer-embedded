@@ -39,14 +39,14 @@ class UdpDriver {
 public:
     UdpDriver();
     UdpDriver(
+        const u32_t m_ip_addr_src_val,
+        const u32_t m_ip_addr_dest_val,
         const u16_t m_port_src,
         const u16_t m_port_dest,
         const UdpRawInterface *m_udp_if,
         const OsInterface *m_os_if,
         const uint32_t m_recv_signal,
-        const osThreadId m_recv_signal_task,
-        const u32_t m_ip_addr_src_val,
-        const u32_t m_ip_addr_dest_val
+        const osThreadId m_recv_signal_task
     );
     ~UdpDriver();
 

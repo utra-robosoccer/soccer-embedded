@@ -14,7 +14,7 @@ server_address = ('192.168.0.59', 7)
 sock.bind(('', 7))
 sock.settimeout(2)
 
-message = 'this is a message of'.encode()
+message = 'this is a message ofthis is a message ofthis is a message ofthis is a message ofthis is a me'.encode()
 
 num_samples = 5
 

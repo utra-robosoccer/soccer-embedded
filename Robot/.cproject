@@ -20,8 +20,8 @@
 					<folderInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.711381537.2144293311." name="/" resourcePath="">
 						<toolChain id="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug.1779072777" name="Ac6 STM32 MCU GCC" superClass="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug">
 							<option id="fr.ac6.managedbuild.option.gnu.cross.prefix.338700719" name="Prefix" superClass="fr.ac6.managedbuild.option.gnu.cross.prefix" useByScannerDiscovery="false" value="arm-none-eabi-" valueType="string"/>
-							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.1527428417" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu" useByScannerDiscovery="false" value="STM32F446RETx" valueType="string"/>
-							<option id="fr.ac6.managedbuild.option.gnu.cross.board.1840604095" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" useByScannerDiscovery="false" value="Robot" valueType="string"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.1527428417" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu" useByScannerDiscovery="false" value="STM32F767ZITx" valueType="string"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.board.1840604095" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" useByScannerDiscovery="false" value="NUCLEO-F767ZI" valueType="string"/>
 							<option id="fr.ac6.managedbuild.option.gnu.cross.instructionSet.2017315828" name="Instruction Set" superClass="fr.ac6.managedbuild.option.gnu.cross.instructionSet" useByScannerDiscovery="false" value="fr.ac6.managedbuild.option.gnu.cross.instructionSet.thumbII" valueType="enumerated"/>
 							<option id="fr.ac6.managedbuild.option.gnu.cross.fpu.1583098095" name="Floating point hardware" superClass="fr.ac6.managedbuild.option.gnu.cross.fpu" useByScannerDiscovery="false" value="fr.ac6.managedbuild.option.gnu.cross.fpu.fpv4-sp-d16" valueType="enumerated"/>
 							<option id="fr.ac6.managedbuild.option.gnu.cross.floatabi.38155892" name="Floating-point ABI" superClass="fr.ac6.managedbuild.option.gnu.cross.floatabi" useByScannerDiscovery="false" value="fr.ac6.managedbuild.option.gnu.cross.floatabi.hard" valueType="enumerated"/>
@@ -48,6 +48,15 @@
 									<listOptionValue builtIn="false" value="../../Common/interface"/>
 									<listOptionValue builtIn="false" value="../../Common/hardware"/>
 									<listOptionValue builtIn="false" value="../../Common/component"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/system"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/netif/ppp"/>
+									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F7xx/Include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/lwip"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/lwip/apps"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1620563188" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__weak=__attribute__((weak))"/>
@@ -77,6 +86,15 @@
 									<listOptionValue builtIn="false" value="../../Common/interface"/>
 									<listOptionValue builtIn="false" value="../../Common/hardware"/>
 									<listOptionValue builtIn="false" value="../../Common/component"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/system"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/netif/ppp"/>
+									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F7xx/Include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/lwip"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/lwip/apps"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.878794306" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__weak=__attribute__((weak))"/>
@@ -158,7 +176,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
 						<entry excluding="Middlewares" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src/Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="app"/>
 						<entry excluding="PcInterface|UdpDriver" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="component"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="include"/>
@@ -187,8 +204,8 @@
 					<folderInfo id="fr.ac6.managedbuild.config.gnu.cross.exe.debug.711381537.583658891." name="/" resourcePath="">
 						<toolChain id="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug.370235882" name="Ac6 STM32 MCU GCC" superClass="fr.ac6.managedbuild.toolchain.gnu.cross.exe.debug">
 							<option id="fr.ac6.managedbuild.option.gnu.cross.prefix.389618314" name="Prefix" superClass="fr.ac6.managedbuild.option.gnu.cross.prefix" useByScannerDiscovery="false" value="arm-none-eabi-" valueType="string"/>
-							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.894184845" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu" useByScannerDiscovery="false" value="STM32F446RETx" valueType="string"/>
-							<option id="fr.ac6.managedbuild.option.gnu.cross.board.1054464494" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" useByScannerDiscovery="false" value="Robot" valueType="string"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.mcu.894184845" name="Mcu" superClass="fr.ac6.managedbuild.option.gnu.cross.mcu" useByScannerDiscovery="false" value="STM32F767ZITx" valueType="string"/>
+							<option id="fr.ac6.managedbuild.option.gnu.cross.board.1054464494" name="Board" superClass="fr.ac6.managedbuild.option.gnu.cross.board" useByScannerDiscovery="false" value="NUCLEO-F767ZI" valueType="string"/>
 							<option id="fr.ac6.managedbuild.option.gnu.cross.instructionSet.1233813842" name="Instruction Set" superClass="fr.ac6.managedbuild.option.gnu.cross.instructionSet" useByScannerDiscovery="false" value="fr.ac6.managedbuild.option.gnu.cross.instructionSet.thumbII" valueType="enumerated"/>
 							<option id="fr.ac6.managedbuild.option.gnu.cross.fpu.36745278" name="Floating point hardware" superClass="fr.ac6.managedbuild.option.gnu.cross.fpu" useByScannerDiscovery="false" value="fr.ac6.managedbuild.option.gnu.cross.fpu.fpv4-sp-d16" valueType="enumerated"/>
 							<option id="fr.ac6.managedbuild.option.gnu.cross.floatabi.62128086" name="Floating-point ABI" superClass="fr.ac6.managedbuild.option.gnu.cross.floatabi" useByScannerDiscovery="false" value="fr.ac6.managedbuild.option.gnu.cross.floatabi.hard" valueType="enumerated"/>
@@ -217,12 +234,20 @@
 									<listOptionValue builtIn="false" value="../../Common/component"/>
 									<listOptionValue builtIn="false" value="../../RobotTest/googletest/googletest/include"/>
 									<listOptionValue builtIn="false" value="../../RobotTest/googletest/googlemock/include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/system"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/netif/ppp"/>
+									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F7xx/Include"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.674884498" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__weak=__attribute__((weak))"/>
 									<listOptionValue builtIn="false" value="__packed=__attribute__((__packed__))"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="STM32F446xx"/>
+									<listOptionValue builtIn="false" value="STM32F767xx"/>
 								</option>
 								<option id="fr.ac6.managedbuild.gnu.c.compiler.option.misc.other.798540042.1266457646" superClass="fr.ac6.managedbuild.gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-fmessage-length=0" valueType="string"/>
 								<option id="gnu.c.compiler.option.dialect.std.2111910089" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
@@ -248,12 +273,20 @@
 									<listOptionValue builtIn="false" value="../../Common/component"/>
 									<listOptionValue builtIn="false" value="../../RobotTest/googletest/googletest/include"/>
 									<listOptionValue builtIn="false" value="../../RobotTest/googletest/googlemock/include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/system"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc"/>
+									<listOptionValue builtIn="false" value="../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1"/>
+									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/netif/ppp"/>
+									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F7xx/Include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1119572749" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__weak=__attribute__((weak))"/>
 									<listOptionValue builtIn="false" value="__packed=__attribute__((__packed__))"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="STM32F446xx"/>
+									<listOptionValue builtIn="false" value="STM32F767xx"/>
 								</option>
 								<option id="fr.ac6.managedbuild.gnu.cpp.compiler.option.misc.other.1923119474" name="Other flags" superClass="fr.ac6.managedbuild.gnu.cpp.compiler.option.misc.other" useByScannerDiscovery="false" value="-fmessage-length=0" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.718489388" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
@@ -303,7 +336,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
 						<entry excluding="Middlewares" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src/Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="app"/>
 						<entry excluding="PcInterface|UdpDriver" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="component"/>
 						<entry excluding="UdpRawInterfaceImpl.cpp" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="hardware"/>
@@ -323,7 +355,7 @@
 		<configuration configurationName="F7"/>
 		<configuration configurationName="F4"/>
 		<configuration configurationName="Debug">
-			<resource resourceType="PROJECT" workspacePath="/Robot"/>
+			<resource resourceType="PROJECT" workspacePath="Robot_F7"/>
 		</configuration>
 		<configuration configurationName="Release"/>
 	</storageModule>

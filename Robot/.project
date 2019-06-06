@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Robot</name>
+	<name>Robot_F7</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -29,22 +29,22 @@
 		<link>
 			<name>app</name>
 			<type>2</type>
-			<locationURI>$%257BPARENT-1-PROJECT_LOC%257D/Common/app</locationURI>
+			<location>C:/Users/rob/soccer-embedded/Common/app</location>
 		</link>
 		<link>
 			<name>component</name>
 			<type>2</type>
-			<locationURI>$%257BPARENT-1-PROJECT_LOC%257D/Common/component</locationURI>
+			<locationURI>$%25257BPARENT-1-PROJECT_LOC%25257D/Common/component</locationURI>
 		</link>
 		<link>
 			<name>hardware</name>
 			<type>2</type>
-			<locationURI>$%257BPARENT-1-PROJECT_LOC%257D/Common/hardware</locationURI>
+			<locationURI>$%25257BPARENT-1-PROJECT_LOC%25257D/Common/hardware</locationURI>
 		</link>
 		<link>
 			<name>include</name>
 			<type>2</type>
-			<locationURI>$%257BPARENT-1-PROJECT_LOC%257D/Common/include</locationURI>
+			<locationURI>$%25257BPARENT-1-PROJECT_LOC%25257D/Common/include</locationURI>
 		</link>
 		<link>
 			<name>interface</name>
@@ -59,7 +59,7 @@
 		<link>
 			<name>test</name>
 			<type>2</type>
-			<locationURI>$%257BPARENT-1-PROJECT_LOC%257D/Common/test</locationURI>
+			<locationURI>$%25257BPARENT-1-PROJECT_LOC%25257D/Common/test</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>

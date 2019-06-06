@@ -91,7 +91,7 @@ void OsInterfaceImpl::OS_vTaskDelayUntil(
     const TickType_t xTimeIncrement
 ) const
 {
-    vTaskDelayUntil(pxPreviousWakeTime, xTimeIncrement);
+    //vTaskDelayUntil(pxPreviousWakeTime, xTimeIncrement);
 }
 
 osStatus OsInterfaceImpl::OS_osDelay (
