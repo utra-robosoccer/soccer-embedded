@@ -17,6 +17,10 @@
 #include <iostream>
 #include <fstream>
 
+//#include <cstdlib>
+#include <string>
+using namespace std;
+
 #include <math.h>
 
 #define BLACK 0
@@ -431,7 +435,7 @@ int cursor_x = 0;
 int textsize = 0;
 uint16_t textcolor = 0xFFFF;
 uint16_t textbgcolor = 0xFFFF;
-char ip[14] = "138.51.120.89";
+//char ip[14] = "138.51.120.89";
 
 
 void drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color, uint16_t bg, uint8_t size);
@@ -763,6 +767,25 @@ void print_ip_address(char ip_address[]){
  
 
 int main(){
+	int result = system("python ip_address.py 1");
+	int arraysize=14;
+	char ip[arraysize];
+	char current_char;
+
+	int num_characters = 0;
+	int i = 0;
+
+	ifstream myfile;
+	myfile.open("ip.txt");
+	if (myfile.is_open()){
+		while(!myfile.eof()){
+			myfile >> ip;
+			
+		}
+	}
+	printf("%s",ip);
+	myfile.close();
+
 	int FileDescriptor = open();
 	begin(FileDescriptor);
 
