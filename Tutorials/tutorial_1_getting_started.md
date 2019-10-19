@@ -18,7 +18,7 @@ To download System Workbench:
 3. Choose the appropriate installer for your system (note: the Windows version is compatible with Windows 10)
 
 ## STLink USB Driver
-You will need this USB driver to program code into the microcontroller. To download it, follow the link below and click "Get Software" at the bottom.
+You will need this USB driver to program code into the microcontroller. To download it, follow the link below and click "Get Software" at the bottom. This USB driver is not necessary for macos and linux systems.
 https://www.st.com/en/development-tools/stsw-link009.html
 
 # Creating Your First Project
